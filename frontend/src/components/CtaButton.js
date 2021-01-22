@@ -10,6 +10,7 @@ const ctaButton = (props) => {
       className={theme.concat(
         " w-32 h-10 bg-transparent border border-gray-500 focus:outline-none rounded uppercase font-archivo"
       )}
+      onClick={props.click}
     >
       {props.btnText}
     </button>

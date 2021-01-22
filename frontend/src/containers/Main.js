@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
 class Main extends Component {
-
-    render () {
-        return <main>i am da main!</main>;
-    }
+  render() {
+    return (
+      <main className="w-full h-full bg-beige md:h-screen">i am da main!</main>
+    );
+  }
 }
 
 export default Main;
