@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useHistory } from "react-router-dom";
 import { GoogleLogin } from "react-google-login";
+import GitHubLogin from "react-github-login";
 
 import OAuthLoginButton from "./OAuthLoginButton";
 import ModalCloseButton from "./ModalCloseButton";
@@ -8,6 +9,8 @@ import { useAuth } from "../context/Auth";
 
 const LoginModal = (props) => {
   const GOOGLE_OAUTH_CLIENT_ID = process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID;
+  const GITHUB_OAUTH_CLIENT_ID = process.env.GITHUB_OAUTH_CLIENT_ID;
+
   const history = useHistory();
 
   const clickClose = () => history.goBack();
@@ -33,10 +36,16 @@ const LoginModal = (props) => {
               isSignedIn={true}
             />
           )}
-          onSuccess={(response) => auth.loginSuccess(response)}
+          onSuccess={(response) => auth.loginSuccess(response, "google")}
           onFailure={(error) => auth.loginFailure(error)}
         />
-        <OAuthLoginButton btnText="Apple" />
+        <GitHubLogin
+          clientId={GITHUB_OAUTH_CLIENT_ID}
+          redirectUri=""
+          className="flex justify-center items-center h-1/6 w-full md:w-3/4 m-3 border border-solid border-black bg-white text-center font-md poppins"
+          onSuccess={(response) => auth.loginSuccess(response, "github")}
+          onFailure={(error) => auth.loginFailure(error)}
+        />
       </div>
     </div>
   );
