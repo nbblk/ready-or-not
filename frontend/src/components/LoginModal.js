@@ -4,7 +4,7 @@ import { GoogleLogin } from "react-google-login";
 import GitHubLogin from "react-github-login";
 
 import OAuthLoginButton from "./OAuthLoginButton";
-import ModalCloseButton from "./ModalCloseButton";
+import ModalCloseIcon from "./svgIcons/ModalCloseIcon";
 import { useAuth } from "../context/Auth";
 
 const LoginModal = (props) => {
@@ -23,7 +23,7 @@ const LoginModal = (props) => {
     >
       <div className="relative h-1/3 md:h-1/3 w-full md:w-1/3 p-3.5 flex flex-col justify-center items-center bg-beige fixed z-50">
         <Link to="/">
-          <ModalCloseButton onClick={() => clickClose()} />
+          <ModalCloseIcon onClick={() => clickClose()} />
         </Link>
         <GoogleLogin
           clientId={GOOGLE_OAUTH_CLIENT_ID}

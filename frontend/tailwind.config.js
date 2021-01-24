@@ -30,8 +30,12 @@ module.exports = {
         },
         beige: {
           DEFAULT: "#ECE8E4",
+          yellowish: "#F8F6F1"
         }
       },
+      boxShadow: {
+        bold: "7px 3px 0px 2px #000000"
+      }
     },
   },
   variants: {
