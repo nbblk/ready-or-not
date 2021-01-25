@@ -1,8 +1,9 @@
 import React from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { GoogleLogin } from "react-google-login";
 import GitHubLogin from "react-github-login";
 
+import Backdrop from "./Backdrop";
 import OAuthLoginButton from "./OAuthLoginButton";
 import ModalCloseIcon from "./svgIcons/ModalCloseIcon";
 import { useAuth } from "../context/Auth";
@@ -11,19 +12,13 @@ const LoginModal = (props) => {
   const GOOGLE_OAUTH_CLIENT_ID = process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID;
   const GITHUB_OAUTH_CLIENT_ID = process.env.GITHUB_OAUTH_CLIENT_ID;
 
-  const history = useHistory();
-
-  const clickClose = () => history.goBack();
   const auth = useAuth();
 
   return (
-    <div
-      className="fixed h-full w-full bg-black bg-opacity-75 z-50 flex justify-center items-center"
-      onClick={() => clickClose()}
-    >
+    <Backdrop>
       <div className="relative h-1/3 md:h-1/3 w-full md:w-1/3 p-3.5 flex flex-col justify-center items-center bg-beige fixed z-50">
         <Link to="/">
-          <ModalCloseIcon onClick={() => clickClose()} />
+          <ModalCloseIcon />
         </Link>
         <GoogleLogin
           clientId={GOOGLE_OAUTH_CLIENT_ID}
@@ -47,7 +42,7 @@ const LoginModal = (props) => {
           onFailure={(error) => auth.loginFailure(error)}
         />
       </div>
-    </div>
+      </Backdrop>
   );
 };
 

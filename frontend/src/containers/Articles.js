@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import NewArticle from '../components/NewArticle';
+import NewArticle from "../components/NewArticle";
 import Article from "../components/Article";
 
 class Articles extends Component {
@@ -14,9 +14,13 @@ class Articles extends Component {
     return (
       <section className="w-full h-full p-10 flex flex-col flex-wrap md:flex-row justify-center content-center">
         <NewArticle />
-        {this.state.articles.map((article) => {
+        {this.state.articles.map((article, index) => {
           return (
-            <Article title={article.title} url={article.imageUrl}></Article>
+            <Article
+              key={index}
+              title={article.title}
+              url={article.imageUrl}
+            ></Article>
           );
         })}
       </section>
