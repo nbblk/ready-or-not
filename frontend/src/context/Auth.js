@@ -14,9 +14,8 @@ export function useAuth() {
 
 function useProvideAuth() {
   const [user, setUser] = useState(null);
-  const loginSuccess = async (response, type) => {
-    console.log(response, type);
 
+  const loginSuccess = async (response, type) => {
     if (type === "google") {
       const res = await fetch(`http://localhost:8080/api/v1/auth/${type}`, {
         method: "POST",
@@ -24,10 +23,11 @@ function useProvideAuth() {
         headers: { "Content-Type": "application/json" },
         mode: "cors",
       });
-      const data = await res.json();
-      setUser(data.value);
-      localStorage.setItem("user", JSON.stringify(data.value));
+        const data = await res.json();
+        localStorage.setItem("user", JSON.stringify(data.value));  
+        await setUser(data.value);
     }
+    
 
     if (type === "github") {
       const res = await fetch(`http://localhost:8080/api/v1/auth/${type}`, {
@@ -46,7 +46,6 @@ function useProvideAuth() {
   };
 
   const logout = (history) => {
-    debugger;
     setUser(null);
     localStorage.removeItem("user");
     history.replace("/");

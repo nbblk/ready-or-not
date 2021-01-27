@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import Backdrop from "../components/Backdrop";
 import ModalCloseIcon from "../components/svgIcons/ModalCloseIcon";
 import Input from "../components/InputText";
@@ -7,6 +7,7 @@ import TagItem from "../components/TagItem";
 import CtaButton from "../components/CtaButton";
 
 const NewResourceModal = (props) => {
+  const history = useHistory();
   const d = new Date().toISOString().substr(0, 10);
   const [resource, setResource] = useState({
     url: "",
@@ -17,16 +18,22 @@ const NewResourceModal = (props) => {
 
   const addResource = (event) => {
     event.preventDefault();
-    const accessToken = JSON.parse(localStorage.getItem('user')).token;
-    fetch("http://localhost:8080/new", {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const accessToken = user.auth.token;
+    fetch("http://localhost:8080/api/v1/article/new", {
       method: "POST",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
+        "X-Access-Token": `${accessToken}`,
       },
-      body: JSON.stringify(resource),
-    });
+      body: JSON.stringify({resource, _id: user._id}),
+    }).then((response) => {
+      console.log(response);
+      history.replace('/main');
+    }).catch((error) => {
+      console.error(error);
+    })
   };
 
   const handleKeyDown = (event) => {
