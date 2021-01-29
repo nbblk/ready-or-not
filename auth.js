@@ -14,7 +14,7 @@ const login = async (oauthType, token) => {
   if (oauthType === "github") {
     user = await loginWithGithub({ oauthType, token });
   }
-  return user, token;
+  return user;
 };
 
 const authorize = async (oauthType, token) => {
@@ -30,22 +30,19 @@ const verifyGoogleToken = async (token) => {
   const ticket = await authClient.verifyIdToken({
     idToken: token,
     audience: process.env.GOOGLE_OAUTH_CLIENT_ID,
-  });
-  return { ticket, token };
+  }).catch(console.error);
+
+  return ticket;
 };
 
-const loginWithGoogle = async (oauthType, token) => {
-  const verified = await verifyGoogle(token);
-  const { name, email, picture } = verified.ticket.getPayload();
-  const accessToken = verified.token;
+const loginWithGoogle = async (oauthType, idToken) => {
+  const ticket = await verifyGoogleToken(idToken);
+  const { email } = ticket.payload;
   const user = await db.upsertUser({
     oauthType,
-    accessToken,
-    name,
-    email,
-    picture,
+    idToken,
+    email
   });
-
   return user;
 };
 

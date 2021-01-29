@@ -13,23 +13,24 @@ const mongoInit = async () => {
 };
 
 const upsertUser = async (user) => {
-  const updated = await mongoClient
-    .db("test")
-    .collection("user")
-    .findOneAndUpdate(
-      { email: user.email },
-      {
-        $set: {
-          auth: { type: user.oauthType, token: user.accessToken },
-          name: user.name,
-          picture: user.picture ? user.picture : user["avatar_url"],
+  try {
+    const updated = await mongoClient
+      .db("test")
+      .collection("user")
+      .findOneAndUpdate(
+        { email: user.email, "auth.type": user.oauthType },
+        {
+          $set: {
+            auth: { type: user.oauthType, token: user.idToken },
+          },
         },
-      },
-      { upsert: true },
-      { returnNewDocument: true }
-    )
-    .catch((err) => console.error(err));
-  return updated;
+        { upsert: true },
+        { returnNewDocument: true }
+      );
+    return { _id: updated.value._id.toString() };
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const upsertArticle = async (article) => {

@@ -9,8 +9,12 @@ const PORT = process.env.SERVER_PORT;
 
 const app = express();
 const jsonParser = bodyParser.json();
-
-app.use(cors());
+const corsConfig = {
+  credentials: true,
+  origin: true,
+};
+app.use(cookieParser());
+app.use(cors(corsConfig));
 app.options("*", cors());
 
 db.mongoInit();
@@ -20,43 +24,50 @@ app.listen(PORT, () =>
 );
 
 const authorize = async (req, res, next) => {
-  const oauthType = req.headers.cookie.split('; ')[0].split('=')[1];
+  const oauthType = req.query.oauth;
   const token = req.headers["x-access-token"];
   try {
     await auth.authorize(oauthType, token);    
+    next();
   } catch (error) {
     res.status(401);
-  }
-  next();
+  } 
 };
 
 app.post("/api/v1/auth/:oauthType", jsonParser, async (req, res) => {
   const oauthType = req.params.oauthType;
-  const token = req.body.token;
+  const token = req.body.token.token;
   try {
-    await auth.login(oauthType, token);
+    const user = await auth.login(oauthType, token);
+    user.oauth = oauthType;
+    res.status(201);
+    res.json(user);
   } catch (error) {
     res.status(401);
-  }  
-  res.status(308);
-  res.cookie('oauth', oauthType, {maxAge: 10800});
-  res.json(user);
+  }
+});
+
+app.get("/api/v1/articles", authorize, async (req, res) => {
+  try {
+    const _id = req.query.uid;
+    const articles = await db.fetchArticles(_id);
+    res.status(200);
+    res.json(articles);   
+  } catch (error) {
+    res.status(500);
+  }
 });
 
 app.post("/api/v1/article/new", jsonParser, authorize, async (req, res) => {
-  const token = req.headers["x-access-token"];
-  const _id = req.body._id;
-  const { url, tags, due } = req.body.resource;
-  const articles = await db.upsertArticle({ token, _id, url, tags, due });
-  res.status(200);
-  res.json(articles);
-});
-
-app.get("/api/v1/articles/:_id", jsonParser, authorize, async (req, res) => {
-  const _id = req.params._id;
-  const articles = await db.fetchArticles(_id);
-  res.status(200);
-  res.json(articles);
+  try {
+    const _id = req.query.uid;
+    const { url, tags, due } = req.body.resource;
+    const articles = await db.upsertArticle({ _id, url, tags, due });
+    res.status(201);
+    res.json(articles);      
+  } catch (error) {
+    res.status(500);
+  }
 });
 
 app.delete("/api/v1/articles/:_id", jsonParser, authorize, async (req, res) => {
