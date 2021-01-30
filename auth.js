@@ -12,7 +12,7 @@ const login = async (oauthType, token) => {
     user = await loginWithGoogle(oauthType, token);
   }
   if (oauthType === "github") {
-    user = await loginWithGithub({ oauthType, token });
+    user = await loginWithGithub(token, oauthType);
   }
   return user;
 };
@@ -27,10 +27,12 @@ const authorize = async (oauthType, token) => {
 };
 
 const verifyGoogleToken = async (token) => {
-  const ticket = await authClient.verifyIdToken({
-    idToken: token,
-    audience: process.env.GOOGLE_OAUTH_CLIENT_ID,
-  }).catch(console.error);
+  const ticket = await authClient
+    .verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_OAUTH_CLIENT_ID,
+    })
+    .catch(console.error);
 
   return ticket;
 };
@@ -41,7 +43,7 @@ const loginWithGoogle = async (oauthType, idToken) => {
   const user = await db.upsertUser({
     oauthType,
     idToken,
-    email
+    email,
   });
   return user;
 };
@@ -61,15 +63,18 @@ const verifyGithubToken = async (tempCode) => {
   return accessToken;
 };
 
-const loginWithGithub = async (oauthType, code) => {
-  const accessToken = await verifyGithub({ oauthType, code });
-  const response = await axios.get("https://api.github.com/user", {
+const loginWithGithub = async (tempCode, oauthType) => {
+  const accessToken = await verifyGithubToken(tempCode);
+  const response = await axios.get("https://api.github.com/user/emails", {
     headers: {
       Authorization: `token ${accessToken}`,
       Accept: "application/vnd.github.v3+json",
     },
   });
-  const user = await db.upsertUser(response);
+  const user = await db.upsertUser({
+    email: response.data[0].email,
+    oauthType: oauthType,
+  });
   return user;
 };
 
