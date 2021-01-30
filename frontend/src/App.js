@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Redirect,
-} from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, Redirect, useLocation } from "react-router-dom";
 import { PrivateRoute, useAuth } from "./context/Auth";
 
 import NewResourceModal from "./components/NewResourceModal";
@@ -26,12 +21,21 @@ function App(props) {
           <LoginModal />
         </Route>
         <Navigation />
-        {auth.user ? <Redirect to="/main" /> : <Landing />}
+        {auth.valid ? <Redirect to="/main" /> : <Landing />}
         <Switch>
+          <Route exact path="/">
+            <Landing />
+          </Route>
+          <PrivateRoute path="/main">
+            <Main />
+          </PrivateRoute>
           <PrivateRoute path="/new">
             <NewResourceModal />
           </PrivateRoute>
-          <PrivateRoute path="/main">
+          <PrivateRoute path="/archive">
+            <Main />
+          </PrivateRoute>
+          <PrivateRoute path="/notes">
             <Main />
           </PrivateRoute>
         </Switch>

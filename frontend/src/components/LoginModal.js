@@ -10,7 +10,7 @@ import { useAuth } from "../context/Auth";
 
 const LoginModal = (props) => {
   const GOOGLE_OAUTH_CLIENT_ID = process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID;
-  const GITHUB_OAUTH_CLIENT_ID = process.env.GITHUB_OAUTH_CLIENT_ID;
+  const GITHUB_OAUTH_CLIENT_ID = process.env.REACT_APP_GITHUB_OAUTH_CLIENT_ID;
 
   const auth = useAuth();
 
@@ -38,7 +38,7 @@ const LoginModal = (props) => {
           clientId={GITHUB_OAUTH_CLIENT_ID}
           redirectUri=""
           className="flex justify-center items-center h-1/6 w-full md:w-3/4 m-3 border border-solid border-black bg-white text-center font-md poppins"
-          onSuccess={(response) => auth.loginSuccess(response, "github")}
+          onSuccess={(tempCode) => auth.loginSuccess(tempCode, "github")}
           onFailure={(error) => auth.loginFailure(error)}
         />
       </div>

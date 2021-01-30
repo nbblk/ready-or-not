@@ -13,46 +13,56 @@ export function useAuth() {
 }
 
 function useProvideAuth() {
-  const [user, setUser] = useState(null);
-
-  const loginSuccess = async (response, type) => {
-    if (type === "google") {
-      const res = await fetch(`http://localhost:8080/api/v1/auth/${type}`, {
-        method: "POST",
-        body: JSON.stringify({ token: response.tokenObj["id_token"] }),
-        headers: { "Content-Type": "application/json" },
-        mode: "cors",
-      });
-        const data = await res.json();
-        localStorage.setItem("user", JSON.stringify(data.value));  
-        await setUser(data.value);
+  const [valid, setValid] = useState(false);
+  const loginSuccess = async (response, oauthType) => {
+    const uri = `http://localhost:8080/api/v1/auth/${oauthType}`;
+    if (oauthType === "google") {
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          token: response.accessToken,
+          imageUrl: response.profileObj.imageUrl,
+          email: response.profileObj.email,
+        })
+      );
+      verifyToken(uri, { token: response.tokenId });
     }
-    
 
-    if (type === "github") {
-      const res = await fetch(`http://localhost:8080/api/v1/auth/${type}`, {
-        method: "POST",
-        body: JSON.stringify({ code: response.code }),
-        headers: { "Content-Type": "application/json" },
-        mode: "cors",
-      });
-      const data = await res.json(); // access_token
-      console.dir(data);
+    if (oauthType === "github") {
+      localStorage.setItem("user", JSON.stringify({_id: null, oauth: null, email: null}));
+      verifyToken(uri, response); // code object
     }
+  };
+
+  async function verifyToken(uri, tokenId) {
+    const res = await fetch(uri, {
+      method: "POST",
+      mode: "cors",
+      body: JSON.stringify(tokenId),
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = await res.json();
+  
+    const user = JSON.parse(localStorage.getItem("user"));
+    user.oauth = data.oauth;
+    user._id = data._id;
+    user.email = data.email; 
+    localStorage.setItem("user", JSON.stringify(user));
+    await setValid(true);
   };
 
   const loginFailure = async (error) => {
     console.error(error);
   };
 
-  const logout = (history) => {
-    setUser(null);
+  const logout = async (history) => {
     localStorage.removeItem("user");
+    await setValid(false);
     history.replace("/");
   };
 
   return {
-    user,
+    valid,
     loginSuccess,
     loginFailure,
     logout,
@@ -60,12 +70,12 @@ function useProvideAuth() {
 }
 
 export function PrivateRoute({ children, ...rest }) {
-  let auth = useAuth();
+  const auth = useAuth();
   return (
     <Route
       {...rest}
       render={({ location }) =>
-        auth.user ? (
+      auth.valid ? (
           children
         ) : (
           <Redirect
