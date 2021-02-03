@@ -27,7 +27,12 @@ const upsertUser = async (user) => {
         { upsert: true },
         { returnNewDocument: true }
       );
-    return { _id: updated.value._id.toString() };
+    return {
+      _id: updated.value._id.toString(),
+      email: updated.value.email,
+      oauth: updated.value.auth.type,
+      token: updated.value.auth.token
+    };
   } catch (error) {
     console.error(error);
   }
@@ -74,10 +79,10 @@ const fetchArticles = async (_id) => {
 
 const deleteArticle = async (data) => {
   try {
-     await mongoClient
+     const article = await mongoClient
       .db("test")
       .collection("user")
-      .update(
+      .findOneAndUpdate(
         {
           _id: new ObjectID(data._id),
         },
@@ -87,6 +92,7 @@ const deleteArticle = async (data) => {
           },
         }
       );
+    return article;
   } catch (error) {
     console.error(error);
   }
