@@ -13,7 +13,6 @@ const corsConfig = {
   credentials: true,
   origin: true,
 };
-app.use(cookieParser());
 app.use(cors(corsConfig));
 app.options("*", cors());
 
@@ -36,10 +35,17 @@ const authorize = async (req, res, next) => {
 
 app.post("/api/v1/auth/:oauthType", jsonParser, async (req, res) => {
   const oauthType = req.params.oauthType;
-  const token = req.body.token.token;
+  let token;
+  if (oauthType === "github") {
+    token = req.body.code;
+  }
+
+  if (oauthType === "google") {
+    token = req.body.token;
+  }
   try {
     const user = await auth.login(oauthType, token);
-    user.oauth = oauthType;
+    res.cookie('token', token);
     res.status(201);
     res.json(user);
   } catch (error) {
@@ -55,10 +61,10 @@ app.get("/api/v1/articles", authorize, async (req, res) => {
     res.json(articles);   
   } catch (error) {
     res.status(500);
-  }
+  }``
 });
 
-app.post("/api/v1/article/new", jsonParser, authorize, async (req, res) => {
+app.post("/api/v1/article/new", jsonParser, async (req, res) => {
   try {
     const _id = req.query.uid;
     const { url, tags, due } = req.body.resource;
@@ -70,9 +76,14 @@ app.post("/api/v1/article/new", jsonParser, authorize, async (req, res) => {
   }
 });
 
-app.delete("/api/v1/articles/:_id", jsonParser, authorize, async (req, res) => {
-  await db.deleteArticle({ _id: req.params._id, articleId: req.body._id });
-  res.status(204);
+app.delete("/api/v1/articles", jsonParser, authorize, async (req, res) => {
+  try {
+    const _id = req.query.uid;
+    await db.deleteArticle({ _id: _id, articleId: req.body._id });
+    res.sendStatus(200);      
+  } catch (error) {
+    res.status(500);
+  }
 });
 
 app.put("/api/v1/archive/:_id", jsonParser, authorize, async (req, res) => {
