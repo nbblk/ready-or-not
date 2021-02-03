@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const db = require("./mongo");
 const auth = require("./auth");
+const scrapPage = require("./puppeteer");
 
 const PORT = process.env.SERVER_PORT;
 
@@ -45,7 +46,6 @@ app.post("/api/v1/auth/:oauthType", jsonParser, async (req, res) => {
   }
   try {
     const user = await auth.login(oauthType, token);
-    res.cookie('token', token);
     res.status(201);
     res.json(user);
   } catch (error) {
@@ -61,17 +61,20 @@ app.get("/api/v1/articles", authorize, async (req, res) => {
     res.json(articles);   
   } catch (error) {
     res.status(500);
-  }``
+  }
 });
 
 app.post("/api/v1/article/new", jsonParser, async (req, res) => {
   try {
     const _id = req.query.uid;
-    const { url, tags, due } = req.body.resource;
-    const articles = await db.upsertArticle({ _id, url, tags, due });
+    const { url, tags, due } = req.body.article;
+    // scrape thumbnail, title form the url
+    const { title, image } = await scrapPage(url);
+    const articles = await db.upsertArticle({ _id, url, tags, due, title, image });
     res.status(201);
     res.json(articles);      
   } catch (error) {
+    console.log(error);
     res.status(500);
   }
 });
