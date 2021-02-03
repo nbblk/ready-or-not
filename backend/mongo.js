@@ -52,6 +52,8 @@ const upsertArticle = async (article) => {
             url: article.url,
             tags: article.tags,
             due: article.due,
+            title: article.title,
+            image: article.image
           },
         },
       },
