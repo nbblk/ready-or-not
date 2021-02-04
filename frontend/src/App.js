@@ -1,18 +1,26 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route, Redirect, useLocation } from "react-router-dom";
-import { PrivateRoute, useAuth } from "./context/Auth";
-
-import NewResourceModal from "./components/NewResourceModal";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect,
+  useHistory
+} from "react-router-dom";
+import { PrivateRoute } from "./context/Auth";
 import LoginModal from "./components/LoginModal";
+import NewArticleModal from "./components/NewResourceModal";
 import Navigation from "./components/Navigation";
 import Main from "./containers/Main";
+import Articles from "./components/Articles";
+import Archive from "./components/Archive";
+import Notes from "./components/Notes";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
 
 import "./App.css";
 
 function App(props) {
-  const auth = useAuth();
+  const history = useHistory();
 
   return (
     <Router>
@@ -21,22 +29,23 @@ function App(props) {
           <LoginModal />
         </Route>
         <Navigation />
-        {auth.valid ? <Redirect to="/main" /> : <Landing />}
+        {sessionStorage.getItem('user') ? <Redirect to="/main" /> : <Landing />}
         <Switch>
           <Route exact path="/">
             <Landing />
           </Route>
-          <PrivateRoute path="/main">
-            <Main />
-          </PrivateRoute>
           <PrivateRoute path="/new">
-            <NewResourceModal />
+            <NewArticleModal
+            />
+          </PrivateRoute>
+          <PrivateRoute path="/main">
+            <Main children={<Articles />}/>
           </PrivateRoute>
           <PrivateRoute path="/archive">
-            <Main />
+            <Main children={<Archive />}/>
           </PrivateRoute>
           <PrivateRoute path="/notes">
-            <Main />
+            <Main children={<Notes />}/>
           </PrivateRoute>
         </Switch>
         <Footer />
