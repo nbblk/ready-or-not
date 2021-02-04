@@ -9,6 +9,7 @@ const inputText = (props) => {
     <div className="m-2.5">
       <label className="font-poppins uppercase">{props.label}</label>
       <input
+        name={props.label}
         className="w-80 mx-2.5 bg-transparent border-black border-b placeholder-gray"
         type={props.type}
         placeholder={props.placeholder ? props.placeholder : null}
