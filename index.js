@@ -27,11 +27,11 @@ const authorize = async (req, res, next) => {
   const oauthType = req.query.oauth;
   const token = req.headers["x-access-token"];
   try {
-    await auth.authorize(oauthType, token);    
+    await auth.authorize(oauthType, token);
     next();
   } catch (error) {
     res.status(401);
-  } 
+  }
 };
 
 app.post("/api/v1/auth/:oauthType", jsonParser, async (req, res) => {
@@ -55,24 +55,30 @@ app.post("/api/v1/auth/:oauthType", jsonParser, async (req, res) => {
 
 app.get("/api/v1/articles", authorize, async (req, res) => {
   try {
-    const _id = req.query.uid;
-    const articles = await db.fetchArticles(_id);
+    const articles = await db.fetchArticles(req.query.uid);
     res.status(200);
-    res.json(articles);   
+    res.json(articles);
   } catch (error) {
     res.status(500);
   }
 });
 
-app.post("/api/v1/article/new", jsonParser, async (req, res) => {
+app.post("/api/v1/article/new", jsonParser, authorize, async (req, res) => {
   try {
     const _id = req.query.uid;
     const { url, tags, due } = req.body.article;
     // scrape thumbnail, title form the url
     const { title, image } = await scrapPage(url);
-    const articles = await db.upsertArticle({ _id, url, tags, due, title, image });
+    const articles = await db.upsertArticle({
+      _id,
+      url,
+      tags,
+      due,
+      title,
+      image,
+    });
     res.status(201);
-    res.json(articles);      
+    res.json(articles);
   } catch (error) {
     console.log(error);
     res.status(500);
@@ -81,15 +87,38 @@ app.post("/api/v1/article/new", jsonParser, async (req, res) => {
 
 app.delete("/api/v1/articles", jsonParser, authorize, async (req, res) => {
   try {
-    const _id = req.query.uid;
-    await db.deleteArticle({ _id: _id, articleId: req.body._id });
-    res.sendStatus(200);      
+    await db.deleteArticle({ _id: req.query.uid, articleId: req.body._id });
+    res.sendStatus(200);
   } catch (error) {
     res.status(500);
   }
 });
 
-app.put("/api/v1/archive/:_id", jsonParser, authorize, async (req, res) => {
-  await db.upsertArchive({ _id: req.params._id, article: req.body });
-  res.status(201);
+app.put("/api/v1/archive", jsonParser, authorize, async (req, res) => {
+  try {
+    await db.upsertArchive({ _id: req.query.uid, article: req.body });
+    res.sendStatus(201);
+  } catch (error) {
+    res.status(500);
+  }
+});
+
+app.get("/api/v1/archive", jsonParser, authorize, async (req, res) => {
+  try {
+    const response = await db.fetchArchive(req.query.uid);
+    res.status(200);
+    res.json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500);
+  }
+});
+
+app.delete("/api/v1/archive", jsonParser, authorize, async (req, res) => {
+  try {
+    await db.deleteArchive({ _id: req.query.uid, articleId: req.body._id });
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(500);
+  }
 });

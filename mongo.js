@@ -112,11 +112,41 @@ const upsertArchive = async (data) => {
         },
         {
           $push: {
-            archived: { article: data },
+            archived: {...data.article, _id: ObjectID(data.article._id)}
           },
         },
         { upsert: false },
         { returnNewDocument: false }
+      );
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const fetchArchive = async (_id) => {
+  try {
+    const archived = await mongoClient
+      .db("test")
+      .collection("user")
+      .find({ _id: new ObjectID(_id) })
+      .project({ archived: 1 })
+      .toArray();
+    return archived;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const deleteArchive = async (data) => {
+  try {
+    await mongoClient
+      .db("test")
+      .collection("user")
+      .findOneAndUpdate(
+        { _id: new ObjectID(data._id) },
+        {
+          $pull: { archived: { _id: new ObjectID(data.articleId) } },
+        }
       );
   } catch (error) {
     console.error(error);
@@ -129,5 +159,7 @@ module.exports = {
   upsertArticle,
   fetchArticles,
   deleteArticle,
-  upsertArchive
+  upsertArchive,
+  fetchArchive,
+  deleteArchive
 };
