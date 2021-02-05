@@ -8,20 +8,18 @@ import {
 } from "react-router-dom";
 import { PrivateRoute } from "./context/Auth";
 import LoginModal from "./components/LoginModal";
-import NewArticleModal from "./components/NewResourceModal";
+import NewArticleModal from "./components/NewArticleModal";
 import Navigation from "./components/Navigation";
 import Main from "./containers/Main";
 import Articles from "./components/Articles";
 import Archive from "./components/Archive";
-import Notes from "./components/Notes";
+import NoteContainer from "./components/NoteContainer";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
 
 import "./App.css";
 
 function App(props) {
-  const history = useHistory();
-
   return (
     <Router>
       <div className="App m-0 p-0">
@@ -45,7 +43,7 @@ function App(props) {
             <Main children={<Archive />}/>
           </PrivateRoute>
           <PrivateRoute path="/notes">
-            <Main children={<Notes />}/>
+            <Main children={<NoteContainer />}/>
           </PrivateRoute>
         </Switch>
         <Footer />

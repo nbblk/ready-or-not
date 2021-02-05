@@ -1,5 +1,7 @@
 import React, { Component } from "react";
+import { Redirect } from "react-router-dom";
 import NewArticleIcon from "./NewArticle";
+import Notes from "./NoteContainer";
 import Article from "./Article";
 
 const user = JSON.parse(sessionStorage.getItem("user"));
@@ -7,6 +9,8 @@ const user = JSON.parse(sessionStorage.getItem("user"));
 class Articles extends Component {
   state = {
     articles: [],
+    isRedirect: false,
+    redirectId: null
   };
 
   async fetchData() {
@@ -40,10 +44,10 @@ class Articles extends Component {
     const arr = [...this.state.articles];
     const found = this.findArticle(_id);
     if (found !== undefined) {
-        arr.splice(found);
-        await this.setState({ articles: arr });
+      arr.splice(found);
+      await this.setState({ articles: arr });
     } else {
-        throw Error(`article ${_id} not found`);
+      throw Error(`article ${_id} not found`);
     }
   }
 
@@ -62,11 +66,11 @@ class Articles extends Component {
     );
     if (repsonse.status === 201) {
       await this.updateArticle(article._id);
-    } 
-  };
+    }
+  }
 
-  handleAddNote = () => {
-    this.props.history.push("/notes");
+  handleAddNote = (_id) => {
+    this.setState({ isRedirect: true, redirectId: _id });
   };
 
   async handleDelete(_id) {
@@ -86,13 +90,13 @@ class Articles extends Component {
     )
       .then(async (response) => {
         if (response.status === 200) {
-         await this.updateArticle(_id);
+          await this.updateArticle(_id);
         }
       })
       .catch((error) => {
         console.error(error);
       });
-  };
+  }
 
   componentDidMount() {
     this.fetchData();
@@ -101,6 +105,9 @@ class Articles extends Component {
   render() {
     return (
       <section className="w-full h-full p-10 flex flex-col flex-wrap md:flex-row justify-center content-center">
+        {this.state.isRedirect ? (
+          <Redirect to={`/notes/${this.state.redirectId}`} />
+        ) : null}
         <NewArticleIcon />
         {this.state.articles
           ? this.state.articles.map((article, index) => {
