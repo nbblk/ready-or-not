@@ -13,7 +13,7 @@ const Article = (props) => {
         />
         <img className="w-full h-full object-cover" src={props.image} alt="img" />
       </div>
-      {/* <TagItem tags={props.tags}/> */}
+      <TagItem tags={props.tags}/>
       <h1 className="h-1/3 m-5 text-2xl md:text-lg text-left font-archivo text-black text-left">
         {props.title}
       </h1>

@@ -3,8 +3,7 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Redirect,
-  useHistory
+  Redirect
 } from "react-router-dom";
 import { PrivateRoute } from "./context/Auth";
 import LoginModal from "./components/LoginModal";
@@ -27,23 +26,22 @@ function App(props) {
           <LoginModal />
         </Route>
         <Navigation />
-        {sessionStorage.getItem('user') ? <Redirect to="/main" /> : <Landing />}
+        {sessionStorage.getItem("user") ? <Redirect to="/main" /> : <Landing />}
         <Switch>
           <Route exact path="/">
             <Landing />
           </Route>
           <PrivateRoute path="/new">
-            <NewArticleModal
-            />
+            <NewArticleModal />
           </PrivateRoute>
           <PrivateRoute path="/main">
-            <Main children={<Articles />}/>
+            <Main children={<Articles />} />
           </PrivateRoute>
           <PrivateRoute path="/archive">
-            <Main children={<Archive />}/>
+            <Main children={<Archive />} />
           </PrivateRoute>
           <PrivateRoute path="/notes">
-            <Main children={<NoteContainer />}/>
+            <Route path="/notes" render={(props) => <NoteContainer {...props} />}/>
           </PrivateRoute>
         </Switch>
         <Footer />

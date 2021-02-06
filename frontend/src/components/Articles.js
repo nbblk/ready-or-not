@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import NewArticleIcon from "./NewArticle";
-import Notes from "./NoteContainer";
 import Article from "./Article";
 
 const user = JSON.parse(sessionStorage.getItem("user"));
@@ -98,6 +97,12 @@ class Articles extends Component {
       });
   }
 
+  getArticle = () => {
+    const found = this.state.articles.filter(
+      (article) => article._id === this.state.redirectId
+    );
+    return found;
+  }
   componentDidMount() {
     this.fetchData();
   }
@@ -106,7 +111,12 @@ class Articles extends Component {
     return (
       <section className="w-full h-full p-10 flex flex-col flex-wrap md:flex-row justify-center content-center">
         {this.state.isRedirect ? (
-          <Redirect to={`/notes/${this.state.redirectId}`} />
+          <Redirect
+            to={{
+              pathname: `/notes/${this.state.redirectId}`, 
+              state: { article: this.getArticle()}
+            }}
+          />
         ) : null}
         <NewArticleIcon />
         {this.state.articles
