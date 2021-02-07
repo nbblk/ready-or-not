@@ -38,26 +38,26 @@ const upsertUser = async (user) => {
   }
 };
 
-const upsertArticle = async (article) => {
-  const articleId = new ObjectID();
+const upsertArticle = async (data) => {
+  const articleId = data.articleId ? ObjectID(data.articleId) : new ObjectID();
   const updated = await mongoClient
     .db("test")
     .collection("user")
     .findOneAndUpdate(
-      { _id: ObjectID(article._id) },
+      { _id: ObjectID(data._id) },
       {
         $push: {
           articles: {
             _id: articleId,
-            url: article.url,
-            tags: article.tags,
-            due: article.due,
-            title: article.title,
-            image: article.image
+            url: data.url,
+            tags: data.tags,
+            due: data.due,
+            title: data.title,
+            image: data.image,
           },
         },
       },
-      { upsert: false },
+      { upsert: true },
       { returnNewDocument: false }
     )
     .catch((err) => console.error(err));
@@ -153,6 +153,64 @@ const deleteArchive = async (data) => {
   }
 };
 
+const upsertNote = async (data) => {
+  const noteId = new ObjectID();
+  const articleId = new ObjectID(data.articleId);
+  try {
+    await upsertArticle(data);
+    await mongoClient
+      .db("test")
+      .collection("user")
+      .findOneAndUpdate(
+        { _id: ObjectID(data._id) },
+        {
+          $push: {
+            notes: {
+              articleId: articleId,
+              _id: noteId,
+              content: data.note,
+            },
+          },
+        },
+        { upsert: true },
+        { returnNewDocument: false }
+      );
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const fetchNotes = async (data) => {
+  try {
+    const notes = await mongoClient
+      .db("test")
+      .collection("user")
+      .find({
+        _id: ObjectID(data._id),
+        "notes.articleId": ObjectID(data.articleId),
+      })
+      .project({ notes: 1 })
+      .toArray();
+    return notes;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const deleteNote = async (data) => {
+  try {
+    await mongoClient
+      .db("test")
+      .collection("user")
+      .findOneAndUpdate(
+        { _id: ObjectID(data._id) },
+        {
+          $pull: { notes: { _id: new ObjectID(data.noteId) } },
+        }
+      );
+  } catch (error) {}
+};
+
 module.exports = {
   mongoInit,
   upsertUser,
@@ -161,5 +219,8 @@ module.exports = {
   deleteArticle,
   upsertArchive,
   fetchArchive,
-  deleteArchive
+  deleteArchive,
+  upsertNote,
+  fetchNotes,
+  deleteNote
 };

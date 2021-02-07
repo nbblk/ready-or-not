@@ -6,10 +6,13 @@ const oldNotes = (props) => {
     <section className="w-full md:w-1/2 h-full p-10 flex flex-col justify-center items-center overflow-scroll">
       <h1 className="w-full self-start m-5 font-archivo text-3xl">Notes</h1>
       <ul className="w-full h-full bg-transparent list-none">
-        {props.notes.map((note) => {
+        {props.notes.map((note, index) => {
           return (
-            <li className="w-full h-auto m-5 p-5 flex flex-col border border-black bg-white rounded font-poppins">
-              <ArticleCloseIcon />
+            <li
+              key={note._id}
+              className="w-full h-auto m-5 p-5 flex flex-col border border-black bg-white rounded font-poppins"
+            >
+              <ArticleCloseIcon click={() => props.delete(note._id)} />
               <p className="p-3">{note.content}</p>
             </li>
           );

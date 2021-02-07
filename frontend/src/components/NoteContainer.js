@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import NewNote from "./NewNote";
 import OldNotes from "./OldNotes";
 
-const user = sessionStorage.getItem("user");
+const user = JSON.parse(sessionStorage.getItem("user"));
 
 class NoteContainer extends Component {
   state = {
@@ -11,8 +11,9 @@ class NoteContainer extends Component {
   };
 
   async fetchData() {
+    const articleId = this.props.location.state.article[0]._id;
     const response = await fetch(
-      `http://localhost:8080/api/v1/notes?uid=${user._id}&oauth=${user.oauth}`,
+      `http://localhost:8080/api/v1/notes?uid=${user._id}&oauth=${user.oauth}&articleId=${articleId}`,
       {
         method: "GET",
         credentials: "include",
@@ -22,7 +23,7 @@ class NoteContainer extends Component {
       }
     );
     const list = await response.json();
-    if (list) this.setState({ notes: list[0].notes });
+    if (list.length > 0) this.setState({ notes: list[0].notes });
   }
 
   findNote(_id) {
@@ -44,18 +45,16 @@ class NoteContainer extends Component {
       arr.splice(found);
       await this.setState({ notes: arr });
     } else {
-      throw Error(`article ${_id} not found`);
+      throw Error(`Note ${_id} not found`);
     }
   }
 
   async handleDelete(_id) {
-    const user = JSON.parse(sessionStorage.getItem("user"));
-
-    fetch(
+    await fetch(
       `http://localhost:8080/api/v1/notes?uid=${user._id}&oauth=${user.oauth}`,
       {
         method: "DELETE",
-        body: JSON.stringify({ _id: _id }),
+        body: JSON.stringify({ noteId: _id }),
         mode: "cors",
         headers: {
           "Content-Type": "application/json",
@@ -64,8 +63,8 @@ class NoteContainer extends Component {
       }
     )
       .then(async (response) => {
-        if (response.status === 200) {
-          await this.updateArticle(_id);
+        if (response.status === 201) {
+          await this.updateNote(_id);
         }
       })
       .catch((error) => {
@@ -133,8 +132,34 @@ class NoteContainer extends Component {
     });
   };
 
+  handleSubmit = (event) => {
+    event.preventDefault();
+    fetch(
+      `http://localhost:8080/api/v1/notes/new?uid=${user._id}&oauth=${user.oauth}`,
+      {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Access-Token": `${user.token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({ note: this.state.article }),
+      }
+    )
+      .then(async (response) => {
+        const updated = await response.json();
+        const arr = [...this.state.notes];
+        arr.push(updated.note.note);
+        await this.setState({ ...this.state.article, notes: arr });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
   async componentDidMount() {
-    //await this.fetchData();
+    await this.fetchData();
     await this.setState({
       ...this.state.notes,
       article: this.props.location.state.article[0],
@@ -160,7 +185,10 @@ class NoteContainer extends Component {
           submit={(event) => this.handleSubmit(event)}
         />
         <div className="absolute hidden lg:block h-full left-1/2 top-64 -ml-3 border border-r-0 border-black bg-black"></div>
-        <OldNotes notes={[{ content: "blabla" }]} />
+        <OldNotes
+          notes={this.state.notes}
+          delete={(_id) => this.handleDelete(_id)}
+        />
       </section>
     );
   }

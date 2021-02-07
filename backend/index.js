@@ -122,3 +122,43 @@ app.delete("/api/v1/archive", jsonParser, authorize, async (req, res) => {
     res.status(500);
   }
 });
+
+app.post("/api/v1/notes/new", jsonParser, authorize, async (req, res) => {
+  try {
+    await db.upsertNote({
+      ...req.body.note,
+      articleId: req.body.note._id,
+      _id: req.query.uid,
+    });
+    res.sendStatus(201);
+  } catch (error) {
+    res.status(500);
+  }
+});
+
+app.get("/api/v1/notes", jsonParser, authorize, async (req, res) => {
+  try {
+    const response = await db.fetchNotes({
+      _id: req.query.uid,
+      articleId: req.query.articleId,
+    });
+    res.json(response);
+    res.status(200);
+  } catch (error) {
+    console.error(error);
+    res.status(500);
+  }
+});
+
+app.delete("/api/v1/notes", jsonParser, authorize, async (req, res) => {
+  try {
+    await db.deleteNote({
+      _id: req.query.uid,
+      noteId: req.body.noteId,
+    });
+    res.sendStatus(201);
+  } catch (error) {
+    console.error(error);
+    res.status(500);
+  }
+});
