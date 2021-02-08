@@ -162,3 +162,17 @@ app.delete("/api/v1/notes", jsonParser, authorize, async (req, res) => {
     res.status(500);
   }
 });
+
+app.get("/api/v1/search", jsonParser, authorize, async (req, res) => {
+  try {
+    const result = await db.fetchArticlesByKeyword({
+      _id: req.query.uid,
+      keyword: req.query.keyword,
+    });
+    res.status(200);
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500);
+  }
+});
