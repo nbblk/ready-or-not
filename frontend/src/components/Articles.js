@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
-import NewArticleIcon from "../components/NewArticle";
-import Article from "../components/Article";
+import NewArticleIcon from "./NewArticle";
+import Article from "./Article";
 
 const user = JSON.parse(sessionStorage.getItem("user"));
 
-class ArticleContainer extends Component {
+class Articles extends Component {
   state = {
     articles: [],
     isRedirect: false,
@@ -142,4 +142,4 @@ class ArticleContainer extends Component {
   }
 }
 
-export default ArticleContainer;
+export default Articles;

@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import Searchbar from "../components/Searchbar";
 
+const user = JSON.parse(sessionStorage.getItem("user"));
+
 function Main(props) {
   const [search, setSearch] = useState({
     keyword: null,
     result: [],
-    submit: false,
+    submit: false
   });
 
-  const user = JSON.parse(sessionStorage.getItem("user"));
-
   React.useEffect(() => {
-    if (search.submit) {
+    if (search.submit) { 
       const fetchResult = async () => {
         await fetch(
           `http://localhost:8080/api/v1/search?uid=${user._id}&oauth=${user.oauth}&keyword=${search.keyword}`,
@@ -23,21 +23,21 @@ function Main(props) {
             },
           }
         )
-          .then(async (response) => {
-            const result = await response.json();
-            await setSearch({
-              ...search,
-              result: result[0].articles,
-              submit: false,
-            });
-          })
-          .catch((error) => {
-            console.error(error);
+        .then(async (response) => {
+          const result = await response.json();
+          await setSearch({
+            ...search,
+            result: result[0].articles,
+            submit: false,
           });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
       };
       fetchResult();
-    }
-  });
+    } 
+  }, [search]);
 
   const handleInputChange = async (event) => {
     await setSearch({ ...search, keyword: event.target.value.trim() });
