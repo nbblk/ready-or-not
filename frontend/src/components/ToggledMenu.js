@@ -6,8 +6,8 @@ const toggledMenu = (props) => {
     <ul
       className={
         props.opened
-          ? "w-2/3 md:w-1/5 p-10 fixed font-poppins no-underline text-black bg-beige shadow-bold"
-          : "font-poppins no-underline text-white hidden"
+          ? "w-2/3 md:w-1/5 p-10 fixed font-poppins no-underline text-black border border-black bg-white shadow-bold"
+          : "hidden"
       }
     >
       {["main", "archive", "export"].map((menu, index) => {

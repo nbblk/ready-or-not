@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import ToggledMenu from "./ToggledMenu";
 
 const ToggleMenuButton = (props) => {
-  const [opened, setOpened] = useState({ opened: false });
+  const [opened, setOpened] = useState(false);
 
   return (
     <div
+      id="slider"
       className="relative left-5 z-10 select-none cursor-pointer"
       onClick={() => setOpened(!opened)}
     >
