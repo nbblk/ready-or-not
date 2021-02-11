@@ -6,8 +6,7 @@ const ToggleMenuButton = (props) => {
 
   return (
     <div
-      id="slider"
-      className="relative left-5 z-10 select-none cursor-pointer"
+      className="select-none cursor-pointer"
       onClick={() => setOpened(!opened)}
     >
       <span className="relative block w-8 h-1 mb-1 bg-gray border border-4"></span>

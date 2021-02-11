@@ -2,31 +2,34 @@ import React from "react";
 import { Link, useHistory } from "react-router-dom";
 
 import Logo from "./Logo";
-import Profile from './Profile';
 import ToggleMenuButton from "./ToggleMenuButton";
 import CtaButton from "./CtaButton";
-import { useAuth } from "../context/Auth";
 
 const Navigation = (props) => {
-  const auth = useAuth();
   const history = useHistory();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(sessionStorage.getItem('user'));
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("user");
+    history.push("/");
+  };
 
   return (
-    <nav className="h-15 w-screen px-10 flex justify-between items-center bg-navy fixed z-40">
-      {auth.valid ? <ToggleMenuButton /> : <Logo />}
+    <nav className="fixed h-15 w-screen lg:w-full p-3.5 flex justify-between items-center bg-navy z-40">
+      {user ? <ToggleMenuButton /> : <Logo />}
       <div className="flex justify-between items-center">
-        {auth.valid && user ? (
+        {user ? (
           <div className="w-30 h-50 mx-8 flex jusitfy-center items-center">
-            <p className="m-1.5 text-white">{user.email}</p>
-            <Profile imgUrl={user.imageUrl} />
+            <p className="hidden m-1.5 text-white md:block">
+              {user.email}
+            </p>
           </div>
         ) : null}
-        {auth.valid && user ? (
+        {user && props.auth ? (
           <CtaButton
             btnText="logout"
             btnColor="dark"
-            click={() => auth.logout(history)}
+            click={() => handleLogout()}
           />
         ) : (
           <Link to="/login">

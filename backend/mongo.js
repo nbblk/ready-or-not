@@ -10,18 +10,22 @@ const mongoInit = async () => {
   }).catch((error) => {
     console.error(error);
   });
+  await createIndex();
 };
 
 const createIndex = async () => {
-  await mongoClient
+  try {
+    await mongoClient
     .db("test")
     .collection("user")
-    .createIndex({ "article.title": "text", "article.tags": "text" });
+    .createIndex({ "articles.title": "text" });    
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const upsertUser = async (user) => {
   try {
-    await createIndex();
     const updated = await mongoClient
       .db("test")
       .collection("user")
@@ -221,18 +225,12 @@ const deleteNote = async (data) => {
 
 const fetchArticlesByKeyword = async (data) => {
   try {
-    const result = await mongoClient
+    const doc = await mongoClient
       .db("test")
       .collection("user")
-      .find({
-        _id: ObjectID(data._id),
-        $text: {
-          $search: data.keyword,
-        },
-      })
+      .find({ "$text": { "$search": data.keyword }})
       .toArray();
-      // .project({ articles: 1 })
-    return result;
+      return doc;
   } catch (error) {
     console.error(error);
   }

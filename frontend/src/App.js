@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Redirect
-} from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { PrivateRoute } from "./context/Auth";
 import LoginModal from "./components/LoginModal";
 import NewArticleModal from "./components/NewArticleModal";
@@ -22,12 +17,12 @@ function App(props) {
   return (
     <Router>
       <div className="App m-0 p-0">
-        <Route path="/login">
-          <LoginModal />
-        </Route>
         <Navigation />
-        {sessionStorage.getItem("user") ? <Redirect to="/main" /> : <Landing />}
         <Switch>
+          <Route path="/login">
+            <LoginModal />
+            <Landing />
+          </Route>
           <Route exact path="/">
             <Landing />
           </Route>
@@ -41,7 +36,10 @@ function App(props) {
             <Main children={<Archive />} />
           </PrivateRoute>
           <PrivateRoute path="/notes">
-            <Route path="/notes" render={(props) => <NoteContainer {...props} />}/>
+            <Route
+              path="/notes"
+              render={(props) => <NoteContainer {...props} />}
+            />
           </PrivateRoute>
         </Switch>
         <Footer />

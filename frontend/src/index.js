@@ -7,9 +7,9 @@ import { ProvideAuth } from './context/Auth';
 
 ReactDOM.render(
   <React.StrictMode>
-    <ProvideAuth>
+    {/* <ProvideAuth> */}
       <App />
-    </ProvideAuth>
+    {/* </ProvideAuth> */}
   </React.StrictMode>,
   document.getElementById('root')
 );

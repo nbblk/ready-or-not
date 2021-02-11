@@ -9,7 +9,7 @@ class ArticleContainer extends Component {
   state = {
     articles: [],
     isRedirect: false,
-    redirectId: null
+    redirectId: null,
   };
 
   async fetchData() {
@@ -73,8 +73,6 @@ class ArticleContainer extends Component {
   };
 
   async handleDelete(_id) {
-    const user = JSON.parse(sessionStorage.getItem("user"));
-
     fetch(
       `http://localhost:8080/api/v1/articles?uid=${user._id}&oauth=${user.oauth}`,
       {
@@ -102,7 +100,7 @@ class ArticleContainer extends Component {
       (article) => article._id === this.state.redirectId
     );
     return found;
-  }
+  };
   componentDidMount() {
     this.fetchData();
   }
@@ -113,8 +111,8 @@ class ArticleContainer extends Component {
         {this.state.isRedirect ? (
           <Redirect
             to={{
-              pathname: `/notes/${this.state.redirectId}`, 
-              state: { article: this.getArticle()}
+              pathname: `/notes/${this.state.redirectId}`,
+              state: { article: this.getArticle() },
             }}
           />
         ) : null}
