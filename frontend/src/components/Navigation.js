@@ -16,12 +16,12 @@ const Navigation = (props) => {
   };
 
   return (
-    <nav className="h-15 w-full px-10 flex justify-between items-center bg-navy fixed z-40">
+    <nav className="h-20 w-full px-5 flex justify-between items-center bg-navy fixed z-40">
       {auth.loggedIn && user ? <ToggleMenuButton /> : <Logo />}
       <div className="flex justify-between items-center">
         {auth.loggedIn && user ? (
           <div className="w-30 h-50 mx-8 flex jusitfy-center items-center">
-            <p className="m-1.5 text-white">{user.email}</p>
+            <p className="m-1.5 text-white hidden md:block">{user.email}</p>
           </div>
         ) : null}
         {auth.loggedIn && user ? (
