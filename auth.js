@@ -13,7 +13,7 @@ const login = async (oauthType, token) => {
     user = await loginWithGoogle(oauthType, token);
   }
   if (oauthType === "github") {
-    user = await loginWithGithub(token, oauthType);
+    user = await loginWithGithub(oauthType, token);
   }
   return user;
 };
@@ -38,12 +38,13 @@ const verifyGoogleToken = async (token) => {
   return ticket;
 };
 
+// More information: https://developers.google.com/identity/sign-in/web/backend-auth
 const loginWithGoogle = async (oauthType, idToken) => {
   const ticket = await verifyGoogleToken(idToken);
-  const { email } = ticket.payload;
+  const { email, sub } = ticket.payload;
   const user = await db.upsertUser({
     oauthType,
-    idToken,
+    sub,
     email,
   });
   return user;
@@ -56,7 +57,7 @@ const verifyGithubToken = async (tempCode) => {
       headers: { Accept: "application/json" },
       client_id: GITHUB_OAUTH_CLIENT_ID,
       client_secret: GITHUB_OAUTH_CLIENT_SECRET,
-      code: tempCode,
+      code: tempCode.code,
     }
   );
   const queryStr = response.data;
@@ -64,7 +65,7 @@ const verifyGithubToken = async (tempCode) => {
   return accessToken;
 };
 
-const loginWithGithub = async (tempCode, oauthType) => {
+const loginWithGithub = async (oauthType, tempCode) => {
   const accessToken = await verifyGithubToken(tempCode);
   const response = await axios.get("https://api.github.com/user/emails", {
     headers: {
@@ -72,10 +73,11 @@ const loginWithGithub = async (tempCode, oauthType) => {
       Accept: "application/vnd.github.v3+json",
     },
   });
-  const user = await db.upsertUser({
+  let user = await db.upsertUser({
     email: response.data[0].email,
     oauthType: oauthType,
   });
+  user.token = accessToken;
   return user;
 };
 

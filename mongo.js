@@ -21,25 +21,26 @@ const createIndex = async () => {
 
 const upsertUser = async (user) => {
   try {
-    await createIndex();
     const updated = await mongoClient
       .db("test")
       .collection("user")
       .findOneAndUpdate(
-        { email: user.email, "auth.type": user.oauthType },
+        { "auth.type": user.oauthType, "auth.sub": user.sub },
         {
           $set: {
-            auth: { type: user.oauthType, token: user.idToken },
+            email: user.email,
+            "auth.type": user.oauthType,
+            "auth.sub": user.sub ? user.sub : null
           },
         },
         { upsert: true },
-        { returnNewDocument: true }
+        { returnNewDocument: true },
+        { returnOriginal: false }
       );
     return {
       _id: updated.value._id.toString(),
       email: updated.value.email,
-      oauth: updated.value.auth.type,
-      token: updated.value.auth.token
+      oauth: updated.value.auth.type
     };
   } catch (error) {
     console.error(error);
