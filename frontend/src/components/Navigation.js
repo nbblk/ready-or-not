@@ -2,31 +2,33 @@ import React from "react";
 import { Link, useHistory } from "react-router-dom";
 
 import Logo from "./Logo";
-import Profile from './Profile';
 import ToggleMenuButton from "./ToggleMenuButton";
 import CtaButton from "./CtaButton";
 import { useAuth } from "../context/Auth";
 
 const Navigation = (props) => {
+  const user = JSON.parse(sessionStorage.getItem("user"));
   const auth = useAuth();
   const history = useHistory();
-  const user = JSON.parse(localStorage.getItem("user"));
+
+  const redirect = () => {
+    history.push("/");
+  };
 
   return (
-    <nav className="h-15 w-screen px-10 flex justify-between items-center bg-navy fixed z-40">
-      {auth.valid ? <ToggleMenuButton /> : <Logo />}
+    <nav className="h-15 w-full px-10 flex justify-between items-center bg-navy fixed z-40">
+      {auth.loggedIn && user ? <ToggleMenuButton /> : <Logo />}
       <div className="flex justify-between items-center">
-        {auth.valid && user ? (
+        {auth.loggedIn && user ? (
           <div className="w-30 h-50 mx-8 flex jusitfy-center items-center">
             <p className="m-1.5 text-white">{user.email}</p>
-            <Profile imgUrl={user.imageUrl} />
           </div>
         ) : null}
-        {auth.valid && user ? (
+        {auth.loggedIn && user ? (
           <CtaButton
             btnText="logout"
             btnColor="dark"
-            click={() => auth.logout(history)}
+            click={() => auth.logout(redirect)}
           />
         ) : (
           <Link to="/login">

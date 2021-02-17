@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+//const session = require('express-session');
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const db = require("./mongo");
@@ -9,14 +10,24 @@ const scrapPage = require("./puppeteer");
 const PORT = process.env.SERVER_PORT;
 
 const app = express();
+//var genuuid = require('uuid-v4')
 const jsonParser = bodyParser.json();
 const corsConfig = {
   credentials: true,
   origin: true,
 };
+// app.use(
+//   session({
+//     name: "sesionCookie",
+//     genid: (req) => genuuid(),
+//     secret: "thisissecret",
+//     saveUninitialized: false,
+//     resave: false,
+//     cookie: { secure: false, expires: 60000 }
+//   })
+// );
 app.use(cors(corsConfig));
 app.options("*", cors());
-
 db.mongoInit();
 
 app.listen(PORT, () =>
@@ -27,15 +38,19 @@ const authorize = async (req, res, next) => {
   const oauthType = req.query.oauth;
   const token = req.headers["x-access-token"];
   try {
-    await auth.authorize(oauthType, token);
-    next();
+    if (!token) {
+      throw Error('access token not exists');
+    } else {
+      await auth.authorize(oauthType, token);     
+      next();
+    }
   } catch (error) {
-    res.status(401);
+    res.sendStatus(401);
   }
 };
 
-app.post("/api/v1/auth/:oauthType", jsonParser, async (req, res) => {
-  const oauthType = req.params.oauthType;
+app.post("/api/v1/auth", jsonParser, async (req, res) => {
+  const oauthType = req.body.oauthType;
   let token;
   if (oauthType === "github") {
     token = req.body.code;
@@ -46,6 +61,7 @@ app.post("/api/v1/auth/:oauthType", jsonParser, async (req, res) => {
   }
   try {
     const user = await auth.login(oauthType, token);
+    req.session.token = user.token;
     res.status(201);
     res.json(user);
   } catch (error) {
