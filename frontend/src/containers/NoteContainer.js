@@ -23,7 +23,7 @@ class NoteContainer extends Component {
       }
     );
     const list = await response.json();
-    if (list.length > 0) this.setState({ notes: list[0].notes });
+    if (list.length > 0) this.setState({ notes: list[0].articles[0].notes });
   }
 
   findNote(_id) {
@@ -133,6 +133,8 @@ class NoteContainer extends Component {
   };
 
   handleSubmit = (event) => {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+
     event.preventDefault();
     fetch(
       `http://localhost:8080/api/v1/notes/new?uid=${user._id}&oauth=${user.oauth}`,
@@ -172,7 +174,7 @@ class NoteContainer extends Component {
 
   render() {
     return (
-      <section className="w-full h-screen bg-beige-yellowish flex flex-col md:flex-row">
+      <section className="w-full h-full bg-beige-yellowish flex flex-col md:flex-row">
         <NewNote
           article={
             !this.state.article
