@@ -12,13 +12,6 @@ const mongoInit = async () => {
   });
 };
 
-const createIndex = async () => {
-  await mongoClient
-    .db("test")
-    .collection("user")
-    .createIndex({ "article.title": "text", "article.tags": "text" });
-};
-
 const upsertUser = async (user) => {
   try {
     const updated = await mongoClient
@@ -63,6 +56,7 @@ const upsertArticle = async (data) => {
             due: data.due,
             title: data.title,
             image: data.image,
+            notes: []
           },
         },
       },
@@ -163,27 +157,25 @@ const deleteArchive = async (data) => {
 };
 
 const upsertNote = async (data) => {
-  const noteId = new ObjectID();
-  const articleId = new ObjectID(data.articleId);
   try {
-    await upsertArticle(data);
-    await mongoClient
+    const doc = await mongoClient
       .db("test")
       .collection("user")
-      .findOneAndUpdate(
-        { _id: ObjectID(data._id) },
+      .updateOne(
+        { _id: ObjectID(data._id), "articles._id": ObjectID(data.articleId) },
         {
-          $push: {
-            notes: {
-              articleId: articleId,
-              _id: noteId,
+          $addToSet: {
+            "articles.$.notes": {
+              _id: ObjectID(data.noteId),
               content: data.note,
             },
           },
         },
+        { $set: { "articles.$.tags": data.tags, "articles.$.due": data.due } },
         { upsert: true },
-        { returnNewDocument: false }
+        { returnNewDocument: true }
       );
+    return doc;
   } catch (error) {
     console.error(error);
   }
@@ -196,9 +188,27 @@ const fetchNotes = async (data) => {
       .collection("user")
       .find({
         _id: ObjectID(data._id),
-        "notes.articleId": ObjectID(data.articleId),
+        "articles._id": ObjectID(data.articleId),
       })
-      .project({ notes: 1 })
+      .project({ _id: 0, auth: 0, email: 0 })
+      .project({ _id: 0, "articles.notes": 1 })
+      .toArray();
+    return notes;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const fetchAllNotes = async (_id) => {
+  try {
+    const notes = await mongoClient
+      .db("test")
+      .collection("user")
+      .aggregate([
+        { $match: { _id: ObjectID(_id) } },
+        { $unwind: "$doc" },
+        { $project: { _id: 0, auth: 0, email: 0 } },
+      ])
       .toArray();
     return notes;
   } catch (error) {
@@ -225,14 +235,14 @@ const fetchArticlesByKeyword = async (data) => {
     const result = await mongoClient
       .db("test")
       .collection("user")
-      .find({
-        _id: ObjectID(data._id),
-        $text: {
-          $search: data.keyword,
-        },
-      })
+      .aggregate(
+        { $match: { _id: ObjectID(data._id) } },
+        { $unwind: "$articles" },
+        { $match: { "articles.title": { $regex: data.keyword } } },
+        { $project: { "articles": 1, _id: 0 } },
+        { $project: { "articles": 1 } }
+      )
       .toArray();
-      // .project({ articles: 1 })
     return result;
   } catch (error) {
     console.error(error);
@@ -250,6 +260,7 @@ module.exports = {
   deleteArchive,
   upsertNote,
   fetchNotes,
+  fetchAllNotes,
   deleteNote,
   fetchArticlesByKeyword
 };
