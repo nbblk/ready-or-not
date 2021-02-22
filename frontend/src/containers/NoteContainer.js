@@ -50,8 +50,9 @@ class NoteContainer extends Component {
   }
 
   async handleDelete(_id) {
+    const articleId = this.props.location.state.article[0]._id;
     await fetch(
-      `http://localhost:8080/api/v1/notes?uid=${user._id}&oauth=${user.oauth}`,
+      `http://localhost:8080/api/v1/notes?uid=${user._id}&oauth=${user.oauth}&articleId=${articleId}`,
       {
         method: "DELETE",
         body: JSON.stringify({ noteId: _id }),
@@ -150,10 +151,14 @@ class NoteContainer extends Component {
       }
     )
       .then(async (response) => {
-        const updated = await response.json();
-        const arr = [...this.state.notes];
-        arr.push(updated.note.note);
-        await this.setState({ ...this.state.article, notes: arr });
+        if (response.status === 200) {
+          return response.json();
+        }
+      })
+      .then(async (data) => {
+        const arr = [...this.state.notes]
+        arr.push(data);
+        await this.setState({ notes: arr });
       })
       .catch((error) => {
         console.error(error);
