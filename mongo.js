@@ -158,10 +158,10 @@ const deleteArchive = async (data) => {
 
 const upsertNote = async (data) => {
   try {
-    const doc = await mongoClient
+    await mongoClient
       .db("test")
       .collection("user")
-      .updateOne(
+      .findOneAndUpdate(
         { _id: ObjectID(data._id), "articles._id": ObjectID(data.articleId) },
         {
           $addToSet: {
@@ -172,10 +172,12 @@ const upsertNote = async (data) => {
           },
         },
         { $set: { "articles.$.tags": data.tags, "articles.$.due": data.due } },
-        { upsert: true },
-        { returnNewDocument: true }
+        { upsert: true }
       );
-    return doc;
+
+    const doc = await fetchNotes({ _id: data._id, articleId: data.articleId });
+    const notes = doc[0].articles[0].notes;
+    return notes.pop(); // the last element of notes
   } catch (error) {
     console.error(error);
   }
@@ -221,13 +223,17 @@ const deleteNote = async (data) => {
     await mongoClient
       .db("test")
       .collection("user")
-      .findOneAndUpdate(
-        { _id: ObjectID(data._id) },
+      .updateOne(
         {
-          $pull: { notes: { _id: new ObjectID(data.noteId) } },
-        }
+          _id: ObjectID(data._id),
+          "articles._id": ObjectID(data.articleId),
+          "articles.notes._id": ObjectID(data.noteId),
+        },
+        { $pull: { "articles.$.notes": { _id: ObjectID(data.noteId) } } }
       );
-  } catch (error) {}
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const fetchArticlesByKeyword = async (data) => {
