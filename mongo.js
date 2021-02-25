@@ -188,28 +188,28 @@ const fetchNotes = async (data) => {
     const notes = await mongoClient
       .db("test")
       .collection("user")
-      .find({
-        _id: ObjectID(data._id),
-        "articles._id": ObjectID(data.articleId),
-      })
-      .project({ _id: 0, auth: 0, email: 0 })
-      .project({ _id: 0, "articles.notes": 1 })
-      .toArray();
-    return notes;
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const fetchAllNotes = async (_id) => {
-  try {
-    const notes = await mongoClient
-      .db("test")
-      .collection("user")
       .aggregate([
-        { $match: { _id: ObjectID(_id) } },
-        { $unwind: "$doc" },
-        { $project: { _id: 0, auth: 0, email: 0 } },
+        { $match: { _id: ObjectID(data._id) } },
+        {
+          $project: {
+            articles: {
+              $filter: {
+                input: "$articles",
+                as: "article",
+                cond: { $eq: ["$$article._id", ObjectID(data.articleId)] },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            "articles.title": 1,
+            "articles.url": 1,
+            "articles.tags": 1,
+            "articles.notes": 1,
+          },
+        },
       ])
       .toArray();
     return notes;
@@ -266,7 +266,6 @@ module.exports = {
   deleteArchive,
   upsertNote,
   fetchNotes,
-  fetchAllNotes,
   deleteNote,
   fetchArticlesByKeyword
 };
