@@ -1,6 +1,8 @@
 import React, { Component } from "react";
+import Archive from "../components/Archive";
 import Searchbar from "../components/Searchbar";
 import ArticleContainer from "./ArticleContainer";
+
 
 class Main extends Component {
   state = {
@@ -50,14 +52,24 @@ class Main extends Component {
     }
   };
 
-  render(props) {
+  render() {
+    const content = this.props.content;
+    let el = null;
+    if (content === "archive") {
+      el = <Archive />;
+    }
+
+    if (content === "article") {
+      el = <ArticleContainer articles={this.state.result} />
+    }
+    
     return (
       <main className="w-full h-full py-20 md:py-40 bg-beige-yellowish flex flex-col justify-center items-center">
         <Searchbar
           change={(event) => this.handleInputChange(event)}
           keydown={(event) => this.handleEnter(event)}
         />
-        <ArticleContainer articles={this.state.result}/>
+        {el}
       </main>
     );
   }

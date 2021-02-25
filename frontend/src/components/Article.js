@@ -7,6 +7,7 @@ const Article = (props) => {
     <article className="w-full md:w-1/3 md:m-5 my-3 p-3 border border-solid border-black bg-white rounded">
       <div className="w-auto h-2/3 bg-transparent overflow-hidden">
         <ArticleIcons
+          isArchived={props.isArchived}
           archive={props.archive}
           add={props.addNote}
           delete={props.delete}

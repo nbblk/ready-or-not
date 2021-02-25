@@ -10,7 +10,7 @@ const toggledMenu = (props) => {
           : "hidden"
       }
     >
-      {["main", "archive", "export"].map((menu, index) => {
+      {["main", "archive", "about"].map((menu, index) => {
         return (
           <Link key={index} to={`/${menu}`}>
             <li className="m-5 hover:text-purple uppercase text-lg">

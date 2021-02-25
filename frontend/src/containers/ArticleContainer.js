@@ -3,8 +3,6 @@ import { Redirect } from "react-router-dom";
 import NewArticleIcon from "../components/NewArticle";
 import Article from "../components/Article";
 
-const user = JSON.parse(sessionStorage.getItem("user"));
-
 class ArticleContainer extends Component {
   state = {
     articles: [],
@@ -13,6 +11,7 @@ class ArticleContainer extends Component {
   };
 
   async fetchData() {
+    const user = JSON.parse(sessionStorage.getItem("user"));
     const response = await fetch(
       `http://localhost:8080/api/v1/articles?uid=${user._id}&oauth=${user.oauth}`,
       {
@@ -24,7 +23,7 @@ class ArticleContainer extends Component {
       }
     );
     const list = await response.json();
-    if (list) this.setState({ articles: list[0].articles });
+    if (list) this.setState({ ...this.state, articles: list[0].articles, mode: 'list' });  
   }
 
   findArticle(_id) {
@@ -51,6 +50,7 @@ class ArticleContainer extends Component {
   }
 
   async handleArchive(article) {
+    const user = JSON.parse(sessionStorage.getItem("user"));
     const repsonse = await fetch(
       `http://localhost:8080/api/v1/archive?uid=${user._id}&oauth=${user.oauth}`,
       {
@@ -103,13 +103,18 @@ class ArticleContainer extends Component {
     );
     return found;
   }
+
   componentDidMount() {
-    this.fetchData();
+    if (this.props.articles.length > 0) {
+      this.setState({ ...this.state, articles: this.props.articles });
+    }  else {
+      this.fetchData();
+    }
   }
 
   render() {
     return (
-      <section className="w-full h-full p-10 flex flex-col flex-wrap md:flex-row justify-center content-center">
+      <section className="w-full h-full p-10 flex flex-col flex-wrap md:flex-row justify-center itmes-center">
         {this.state.isRedirect ? (
           <Redirect
             to={{

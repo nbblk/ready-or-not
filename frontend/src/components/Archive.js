@@ -40,7 +40,7 @@ class Archive extends Component {
     const arr = [...this.state.articles];
     const found = this.findArticle(_id);
     if (found !== undefined) {
-        arr.splice(found);
+        arr.splice(found, 1);
         await this.setState({ articles: arr });
     } else {
         throw Error(`article ${_id} not found`);
@@ -94,6 +94,7 @@ class Archive extends Component {
                   image={article.image}
                   addNote={() => this.handleAddNote(article._id)}
                   delete={() => this.handleDelete(article._id)}
+                  isArchived={true}
                 />
               );
             })
