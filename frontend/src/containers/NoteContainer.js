@@ -42,7 +42,7 @@ class NoteContainer extends Component {
     const arr = [...this.state.notes];
     const found = this.findNote(_id);
     if (found !== undefined) {
-      arr.splice(found);
+      arr.splice(found, 1);
       await this.setState({ notes: arr });
     } else {
       throw Error(`Note ${_id} not found`);
@@ -164,6 +164,7 @@ class NoteContainer extends Component {
         console.error(error);
       });
   };
+
 
   async componentDidMount() {
     await this.fetchData();

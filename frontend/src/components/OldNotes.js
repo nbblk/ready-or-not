@@ -1,12 +1,18 @@
 import React from "react";
+import { Link, useLocation } from "react-router-dom";
 import ArticleCloseIcon from "./svgIcons/ArticleCloseIcon";
 
-const oldNotes = (props) => {
+const OldNotes = (props) => {
+  const location = useLocation();
+  const articleId = location.pathname.split("/").pop();
   return (
     <section className="w-full md:w-1/2 h-full p-10 flex flex-col justify-center items-center overflow-scroll">
       <h1 className="w-full self-start m-5 font-archivo text-3xl">Notes</h1>
+      <Link className="self-end" to={{ pathname: "/export", state: { articleId: articleId } }} >
+        <small className="underline hover:text-purple">Export...</small>
+      </Link>
       <ul className="w-full h-full bg-transparent list-none">
-        {props.notes.map((note, index) => {
+        {props.notes.map((note) => {
           return (
             <li
               key={note._id}
@@ -22,4 +28,4 @@ const oldNotes = (props) => {
   );
 };
 
-export default oldNotes;
+export default OldNotes;
