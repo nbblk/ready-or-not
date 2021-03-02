@@ -11,7 +11,7 @@ class Main extends Component {
     submit: false,
   };
 
-  async fetchResult() {
+  async fetchSearchResult() {
     const user = JSON.parse(sessionStorage.getItem("user"));
     await fetch(
       `http://localhost:8080/api/v1/search?uid=${user._id}&oauth=${user.oauth}&keyword=${this.state.keyword}`,
@@ -24,10 +24,14 @@ class Main extends Component {
       }
     )
       .then(async (response) => {
-        const result = await response.json();
+        const jsonData = await response.json();
+        const results = [];
+        for (let i = 0; i < jsonData.length; i++) {
+          results.push(jsonData[i].articles);
+        }
         await this.setState({
           ...this.state,
-          result: result,
+          result: results,
           submit: false,
         });
       })
@@ -38,7 +42,7 @@ class Main extends Component {
 
   componentDidUpdate() {
     if (this.state.submit) {
-      this.fetchResult();
+      this.fetchSearchResult();
     }
   }
 

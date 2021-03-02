@@ -6,8 +6,9 @@ import Article from "../components/Article";
 class ArticleContainer extends Component {
   state = {
     articles: [],
+    isSearchedResult: false,
     isRedirect: false,
-    redirectId: null
+    redirectId: null,
   };
 
   async fetchData() {
@@ -23,7 +24,12 @@ class ArticleContainer extends Component {
       }
     );
     const list = await response.json();
-    if (list) this.setState({ ...this.state, articles: list[0].articles, mode: 'list' });  
+    if (list)
+      this.setState({
+        ...this.state,
+        articles: list[0].articles,
+        mode: "list",
+      });
   }
 
   findArticle(_id) {
@@ -102,14 +108,46 @@ class ArticleContainer extends Component {
       (article) => article._id === this.state.redirectId
     );
     return found;
-  }
+  };
 
   componentDidMount() {
     if (this.props.articles.length > 0) {
-      this.setState({ ...this.state, articles: this.props.articles });
-    }  else {
+      this.setState({ articles: this.props.articles, isSearchedResult: true });
+    } else {
       this.fetchData();
     }
+  }
+
+  getArticles(articles) {
+    return articles.map((article) => {
+      return (
+        <Article
+          key={article._id}
+          _id={article._id}
+          url={article.url}
+          due={article.due}
+          tags={article.tags}
+          title={article.title}
+          image={article.image}
+          archive={() => this.handleArchive(article)}
+          addNote={() => this.handleAddNote(article._id)}
+          delete={() => this.handleDelete(article._id)}
+        />
+      );
+    });
+  }
+
+  renderArticles() {
+    let articles = null;
+
+    if (this.props.articles.length > 0) {
+      articles = this.getArticles(this.props.articles);
+    } else {
+      if (this.state.articles.length > 0) {
+        articles = this.getArticles(this.state.articles);
+      }
+    }
+    return articles;
   }
 
   render() {
@@ -118,30 +156,13 @@ class ArticleContainer extends Component {
         {this.state.isRedirect ? (
           <Redirect
             to={{
-              pathname: `/notes/${this.state.redirectId}`, 
-              state: { article: this.getArticle()}
+              pathname: `/notes/${this.state.redirectId}`,
+              state: { article: this.getArticle() },
             }}
           />
         ) : null}
-        <NewArticleIcon />
-        {this.state.articles
-          ? this.state.articles.map((article, index) => {
-              return (
-                <Article
-                  key={article._id}
-                  _id={article._id}
-                  url={article.url}
-                  due={article.due}
-                  tags={article.tags}
-                  title={article.title}
-                  image={article.image}
-                  archive={() => this.handleArchive(article)}
-                  addNote={() => this.handleAddNote(article._id)}
-                  delete={() => this.handleDelete(article._id)}
-                />
-              );
-            })
-          : null}
+        {this.props.articles.length > 0 ? null : <NewArticleIcon />}
+        {this.renderArticles()}
       </section>
     );
   }
