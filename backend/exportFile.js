@@ -1,26 +1,23 @@
 const db = require("./mongo");
-const fs = require("fs");
-const path = require("path");
-const pdfDoc = require("pdfkit");
 const json2md = require("json2md");
-const DIRECTORY_PATH = "/exports";
 
-async function exportNoteToFile(data) {
+async function convertNotes(data) {
   const notes = await db.fetchNotes(data);
-  await convertToFile(data.fileType, notes);
+  const result = await convertByType(data.fileType, notes);
+  return result;
 }
 
-async function convertToFile(fileType, notes) {
+function convertByType(fileType, notes) {
   if (!fileType || !notes) {
     throw Error("fileType or notes are invalid");
   } else {
     switch (fileType) {
       case "pdf":
-        break;
-      case "markdown":
+        return notes;
+      case "md":
         return convertJsonToMarkdown(notes);
       case "csv":
-        return;
+        return notes;
       default:
         break;
     }
@@ -28,12 +25,12 @@ async function convertToFile(fileType, notes) {
 }
 
 function convertJsonToMarkdown(data) {
-  if (!data instanceof Array) {
+  if (!Array.isArray(data)) {
     throw Error("type of notes are invalid");
   } else {
     const jsonArray = addMarkdownElementsToData(data);
     const markdownStr = json2md(jsonArray);
-    writeFile("md", markdownStr);
+    return markdownStr;
   }
 }
 
@@ -45,7 +42,7 @@ function addMarkdownElementsToData(dataArr) {
 
   const collectNotes = (originArr) => {
     let notes = [];
-    originArr.forEach((element, index) => {
+    originArr.forEach((element) => {
       for (let key in element) {
         if (key === "content") {
           notes.push(element[key]);
@@ -78,21 +75,4 @@ function addMarkdownElementsToData(dataArr) {
   return targetArr;
 }
 
-function ensureDirectoryExistence(filePath) {
-  const dirname = path.dirname(filePath);
-  if (fs.existsSync(dirname)) {
-    return true;
-  }
-  ensureDirectoryExistence(dirname);
-  fs.mkdirSync(dirname);
-}
-
-function writeFile(extension, byteArr) {
-  const filepath = `${DIRECTORY_PATH}/${new Date().getTime()}.${extension}`; // timestamp
-  ensureDirectoryExistence(filepath);
-  fs.writeFile(filepath, byteArr, function (err) {
-    console.error(err);
-  });
-}
-
-module.exports = exportNoteToFile;
+module.exports = convertNotes;

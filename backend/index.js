@@ -5,7 +5,7 @@ const cors = require("cors");
 const db = require("./mongo");
 const auth = require("./auth");
 const scrapPage = require("./puppeteer");
-const exportNoteToFile = require("./exportFile");
+const convertNotes = require("./exportFile");
 
 const PORT = process.env.SERVER_PORT;
 
@@ -186,13 +186,13 @@ app.get("/api/v1/search", jsonParser, authorize, async (req, res) => {
 
 app.get("/api/v1/export", authorize, async (req, res) => {
   try {
-   const result = await exportNoteToFile({
-     _id: req.query.uid,
-     articleId: req.query.articleId,
-     fileType: req.query.type,
-   });
-   res.status(200);
-   res.send(fileType === 'json' ? result : new ArrayBuffer(result));
+    const data = await convertNotes({
+      _id: req.query.uid,
+      articleId: req.query.articleId,
+      fileType: req.query.type,
+    });
+    res.status(200);
+    res.send(data);
   } catch (error) {
     console.error(error);
     res.status(500);

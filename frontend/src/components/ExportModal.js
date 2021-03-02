@@ -22,7 +22,7 @@ const ExportModal = (props) => {
           defaultValue="pdf"
           onChange={(event) => handleOption(event)}
         >
-          {["pdf", "markdown", "json"].map((fileType, index) => {
+          {["pdf", "csv", "md"].map((fileType, index) => {
             return (
               <option key={index} value={fileType}>
                 {fileType}

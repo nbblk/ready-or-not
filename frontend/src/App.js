@@ -16,13 +16,13 @@ import Landing from "./components/Landing";
 import Footer from "./components/Footer";
 import "./App.css";
 import ExportModal from "./components/ExportModal";
+import { download } from "./modules/exports";
 
 function App() {
   const auth = useAuth();
-
+  
   const handleExport = (fileType, articleId) => {
     const user = JSON.parse(sessionStorage.getItem("user"));
-
     fetch(
       `http://localhost:8080/api/v1/export?uid=${user._id}&oauth=${user.oauth}&articleId=${articleId}&type=${fileType}`,
       {
@@ -33,20 +33,9 @@ function App() {
         },
       }
     )
-      .then((response) => response.json())
-      .then((responseData) => {
-        switch (fileType) {
-          case "pdf":
-            break;
-          case "markdown":
-            break;
-          case "json":
-            break;
-          default:
-            break;
-        }
-      })
-      .catch();
+      .then(response => response.text())
+      .then(content => download(content, `${articleId}.${fileType}`))
+      .catch(err => console.error(err));
   };
 
   return (
