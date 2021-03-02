@@ -244,9 +244,11 @@ const fetchArticlesByKeyword = async (data) => {
       .aggregate(
         { $match: { _id: ObjectID(data._id) } },
         { $unwind: "$articles" },
-        { $match: { "articles.title": { $regex: data.keyword } } },
-        { $project: { "articles": 1, _id: 0 } },
-        { $project: { "articles": 1 } }
+        { $match: { "articles.title": { $regex: data.keyword, $options: 'i' } } },
+        { $project: { _id: 0, "articles": 1 } },
+        { $project: { "articles.notes": 0 }},
+        { $project: { "articles.notes": 0 }}
+
       )
       .toArray();
     return result;
