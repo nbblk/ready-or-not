@@ -14,7 +14,6 @@ import ArticleContainer from "./containers/ArticleContainer";
 import NoteContainer from "./containers/NoteContainer";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
-import "./App.css";
 import ExportModal from "./components/ExportModal";
 import { download } from "./modules/exports";
 
@@ -40,13 +39,14 @@ function App() {
 
   return (
     <Router>
-      <div className="App m-0 p-0">
+      <div className="page-container relative min-h-screen m-0 p-0">
         <Navigation />
         {auth.loggedIn ? (
           <Redirect to="/main">
             <Main children={<ArticleContainer />} />
           </Redirect>
         ) : null}
+        <div className="content-container pb-40">
         <Switch>
           <Route exact path="/">
             <Landing />
@@ -83,6 +83,7 @@ function App() {
             />
           </PrivateRoute>
         </Switch>
+        </div>
         <Footer />
       </div>
     </Router>
