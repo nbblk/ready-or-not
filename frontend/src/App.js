@@ -15,6 +15,7 @@ import NoteContainer from "./containers/NoteContainer";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
 import ExportModal from "./components/ExportModal";
+import About from "./components/About";
 import { download } from "./modules/exports";
 
 function App() {
@@ -39,7 +40,7 @@ function App() {
 
   return (
     <Router>
-      <div className="page-container relative min-h-screen m-0 p-0">
+      <div className="page-container relative min-h-screen m-0 p-0 bg-beige">
         <Navigation />
         {auth.loggedIn ? (
           <Redirect to="/main">
@@ -54,6 +55,9 @@ function App() {
           <Route path="/login">
             <LoginModal />
             <Landing />
+          </Route>
+          <Route path="/about">
+            <About />
           </Route>
           <PrivateRoute path="/new">
             <NewArticleModal />
