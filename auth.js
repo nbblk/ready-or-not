@@ -7,13 +7,13 @@ const GITHUB_OAUTH_CLIENT_ID = process.env.GITHUB_OAUTH_CLIENT_ID;
 const GITHUB_OAUTH_CLIENT_SECRET = process.env.GITHUB_OAUTH_CLIENT_SECRET;
 const authClient = new OAuth2Client(GOOGLE_OAUTH_CLIENT_ID);
 
-const login = async (oauthType, token) => {
+const login = async (oauthType, tokenData) => {
   let user;
   if (oauthType === "google") {
-    user = await loginWithGoogle(oauthType, token);
+    user = await loginWithGoogle(oauthType, tokenData.tokenId);
   }
   if (oauthType === "github") {
-    user = await loginWithGithub(oauthType, token);
+    user = await loginWithGithub(oauthType, tokenData);
   }
   return user;
 };
@@ -77,7 +77,6 @@ const loginWithGithub = async (oauthType, tempCode) => {
     email: response.data[0].email,
     oauthType: oauthType,
   });
-  user.token = accessToken;
   return user;
 };
 
