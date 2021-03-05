@@ -1,5 +1,6 @@
 import React, { useContext, createContext, useState, useEffect } from "react";
 import { Redirect, Route } from "react-router-dom";
+import fetchData from "../modules/httpRequest";
 
 const authContext = createContext();
 
@@ -12,8 +13,10 @@ export function useAuth() {
   return useContext(authContext);
 }
 
-function useProvideAuth(value) {
+function useProvideAuth() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     if (sessionStorage.getItem("user")) {
       setLoggedIn(true);
@@ -21,30 +24,26 @@ function useProvideAuth(value) {
   }, []);
 
   const loginSuccess = async (response, oauthType) => {
-    if (oauthType === "google") {
-      await verifyToken({
-        oauthType: oauthType,
-        token: response.tokenId,
-        accessToken: response.accessToken,
-      });
-    }
-
-    if (oauthType === "github") {
-      await verifyToken({ oauthType: oauthType, code: response }); // code object
-    }
+    await authenticate({ oauthType: oauthType, token: response });
   };
 
-  async function verifyToken(data) {
+  async function authenticate(data) {
     const uri = `http://localhost:8080/api/v1/auth`;
-    const res = await fetch(uri, {
+
+    await fetchData(uri, {
       method: "POST",
       mode: "cors",
       body: JSON.stringify(data),
       headers: { "Content-Type": "application/json" },
-    });
-    let response = await res.json();
-    sessionStorage.setItem("user", JSON.stringify(response));
-    setLoggedIn(true);
+    })
+      .then(async (response) => {
+        const jsonData = await response.json();
+        sessionStorage.setItem("user", JSON.stringify(jsonData));
+        setLoggedIn(true);
+      })
+      .catch((error) => {
+        setError(error.statusText);
+      });
   }
 
   const loginFailure = async (error, detail) => {
@@ -57,7 +56,7 @@ function useProvideAuth(value) {
     redirect();
   };
 
-  return {loggedIn, loginSuccess, loginFailure, logout };
+  return { loggedIn, error, loginSuccess, loginFailure, logout };
 }
 
 export function PrivateRoute({ children, ...rest }) {

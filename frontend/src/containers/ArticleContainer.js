@@ -13,16 +13,7 @@ class ArticleContainer extends Component {
 
   async fetchData() {
     const user = JSON.parse(sessionStorage.getItem("user"));
-    const response = await fetch(
-      `http://localhost:8080/api/v1/articles?uid=${user._id}&oauth=${user.oauth}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "X-Access-Token": `${user.token}`,
-        },
-      }
-    );
+    const response = await fetch(`http://localhost:8080/api/v1/articles?uid=${user._id}`)
     const list = await response.json();
     if (list)
       this.setState({
@@ -143,7 +134,7 @@ class ArticleContainer extends Component {
     if (this.props.articles.length > 0) {
       articles = this.getArticles(this.props.articles);
     } else {
-      if (this.state.articles.length > 0) {
+      if (this.state.aritcles && this.state.articles.length > 0) {
         articles = this.getArticles(this.state.articles);
       }
     }
