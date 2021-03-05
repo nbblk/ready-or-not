@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import NewArticleIcon from "../components/articles/NewArticle";
 import Article from "../components/articles/Article";
+import fetchData from "../modules/httpRequest";
 
 class ArticleContainer extends Component {
   state = {
@@ -11,15 +12,21 @@ class ArticleContainer extends Component {
     redirectId: null,
   };
 
-  async fetchData() {
+  async fetchArticles() {
     const user = JSON.parse(sessionStorage.getItem("user"));
-    const response = await fetch(`http://localhost:8080/api/v1/articles?uid=${user._id}`)
-    const list = await response.json();
-    if (list)
-      this.setState({
-        ...this.state,
-        articles: list[0].articles,
-        mode: "list",
+    await fetchData(`http://localhost:8080/api/v1/articles?uid=${user._id}`)
+      .then(async (response) => {
+        const list = await response.json();
+        if (list) {
+          this.setState({
+            ...this.state,
+            articles: list[0].articles,
+            mode: "list",
+          });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
       });
   }
 
@@ -101,14 +108,6 @@ class ArticleContainer extends Component {
     return found;
   };
 
-  componentDidMount() {
-    if (this.props.articles.length > 0) {
-      this.setState({ articles: this.props.articles, isSearchedResult: true });
-    } else {
-      this.fetchData();
-    }
-  }
-
   getArticles(articles) {
     return articles.map((article) => {
       return (
@@ -134,13 +133,21 @@ class ArticleContainer extends Component {
     if (this.props.articles.length > 0) {
       articles = this.getArticles(this.props.articles);
     } else {
-      if (this.state.aritcles && this.state.articles.length > 0) {
+      if (this.state.articles && this.state.articles.length > 0) {
         articles = this.getArticles(this.state.articles);
       }
     }
     return articles;
   }
 
+  componentDidMount() {
+    if (this.props.articles.length > 0) {
+      this.setState({ articles: this.props.articles, isSearchedResult: true });
+    } else {
+      this.fetchArticles();
+    }
+  }
+  
   render() {
     return (
       <section className="w-full h-full p-10 flex flex-col flex-wrap md:flex-row justify-center itmes-center">

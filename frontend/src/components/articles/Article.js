@@ -18,10 +18,14 @@ const Article = (props) => {
           alt="img"
         />
       </div>
-      <TagItem tags={props.tags} />
-      <h1 className="h-1/3 m-5 text-2xl md:text-lg text-left font-archivo text-black text-left">
+      {props.tags.length > 0 ? <TagItem tags={props.tags} /> : null}
+      <a
+        href={props.url}
+        target="_blank"
+        className="block h-1/3 m-5 text-2xl md:text-lg text-left font-archivo text-black text-left hover:text-purple cursor-pointer"
+      >
         {props.title}
-      </h1>
+      </a>
     </article>
   );
 };
