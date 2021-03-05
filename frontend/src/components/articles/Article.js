@@ -1,6 +1,6 @@
 import React from "react";
 import ArticleIcons from "./ArticleIcons";
-import TagItem from "./TagItem";
+import TagItem from "../shared/TagItem";
 
 const Article = (props) => {
   return (

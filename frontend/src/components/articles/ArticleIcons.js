@@ -1,7 +1,7 @@
 import React from "react";
-import ArchiveIcon from "./svgIcons/ArchiveIcon";
-import AddNoteIcon from "./svgIcons/ArticleAddNoteIcon";
-import CloseIcon from "./svgIcons/ArticleCloseIcon";
+import ArchiveIcon from "../shared/svgIcons/ArchiveIcon";
+import AddNoteIcon from "../shared/svgIcons/ArticleAddNoteIcon";
+import CloseIcon from "../shared/svgIcons/ArticleCloseIcon";
 
 const articleIcons = (props) => {
   let icons = null;

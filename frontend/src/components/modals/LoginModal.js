@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import { GoogleLogin } from "react-google-login";
 import GitHubLogin from "react-github-login";
 
-import Backdrop from "./Backdrop";
-import OAuthLoginButton from "./OAuthLoginButton";
-import ModalCloseIcon from "./svgIcons/ModalCloseIcon";
-import { useAuth } from "../context/Auth";
+import Backdrop from "../shared/Backdrop";
+import OAuthLoginButton from "../landingPage/OAuthLoginButton";
+import ModalCloseIcon from "../shared/svgIcons/ModalCloseIcon";
+import { useAuth } from "../../context/Auth";
 
 const LoginModal = (props) => {
   const GOOGLE_OAUTH_CLIENT_ID = process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID;

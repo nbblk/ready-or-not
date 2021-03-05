@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import NewNote from "../components/NewNote";
-import OldNotes from "../components/OldNotes";
+import NewNote from "../components/notes/NewNote";
+import OldNotes from "../components/notes/OldNotes";
 
 const user = JSON.parse(sessionStorage.getItem("user"));
 

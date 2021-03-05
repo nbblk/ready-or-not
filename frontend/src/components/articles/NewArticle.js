@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-import PlusIcon from "./svgIcons/NewArticlePlusIcon";
+import PlusIcon from "../shared/svgIcons/NewArticlePlusIcon";
 
 const newArticle = (props) => {
   return (

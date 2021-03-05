@@ -6,15 +6,15 @@ import {
   Redirect
 } from "react-router-dom";
 import { PrivateRoute, useAuth } from "./context/Auth";
-import LoginModal from "./components/LoginModal";
-import NewArticleModal from "./components/NewArticleModal";
-import Navigation from "./components/Navigation";
+import LoginModal from "./components/modals/LoginModal";
+import NewArticleModal from "./components/modals/NewArticleModal";
+import Navigation from "./components/shared/Navigation";
 import Main from "./containers/Main";
 import ArticleContainer from "./containers/ArticleContainer";
 import NoteContainer from "./containers/NoteContainer";
-import Landing from "./components/Landing";
-import Footer from "./components/Footer";
-import ExportModal from "./components/ExportModal";
+import Landing from "./components/landingPage/Landing";
+import Footer from "./components/shared/Footer";
+import ExportModal from "./components/modals/ExportModal";
 import About from "./components/About";
 import { download } from "./modules/exports";
 

@@ -4,7 +4,7 @@ import { Link, useHistory } from "react-router-dom";
 import Logo from "./Logo";
 import ToggleMenuButton from "./ToggleMenuButton";
 import CtaButton from "./CtaButton";
-import { useAuth } from "../context/Auth";
+import { useAuth } from "../../context/Auth";
 
 const Navigation = (props) => {
   const user = JSON.parse(sessionStorage.getItem("user"));

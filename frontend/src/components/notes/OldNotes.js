@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import ArticleCloseIcon from "./svgIcons/ArticleCloseIcon";
+import ArticleCloseIcon from "../shared/svgIcons/ArticleCloseIcon";
 
 const OldNotes = (props) => {
   const location = useLocation();

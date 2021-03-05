@@ -1,7 +1,7 @@
 import React from "react";
-import Input from "./InputText";
-import TagItem from "./TagItem";
-import CtaButton from "./CtaButton";
+import Input from "../shared/InputText";
+import TagItem from "../shared/TagItem";
+import CtaButton from "../shared/CtaButton";
 
 const newNote = (props) => {
   return (

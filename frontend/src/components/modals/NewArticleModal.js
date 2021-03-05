@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
-import Backdrop from "./Backdrop";
-import ModalCloseIcon from "./svgIcons/ModalCloseIcon";
-import Input from "./InputText";
-import TagItem from "./TagItem";
-import CtaButton from "./CtaButton";
+import Backdrop from "../shared/Backdrop";
+import ModalCloseIcon from "../shared/svgIcons/ModalCloseIcon";
+import Input from "../shared/InputText";
+import TagItem from "../shared/TagItem";
+import CtaButton from "../shared/CtaButton";
 
 const NewArticleModal = (props) => {
   const history = useHistory();

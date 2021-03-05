@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import Archive from "../components/Archive";
-import Searchbar from "../components/Searchbar";
+import Searchbar from "../components/shared/Searchbar";
 import ArticleContainer from "./ArticleContainer";
 
 

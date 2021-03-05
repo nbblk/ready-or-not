@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import Article from "./Article";
+import Article from "./articles/Article";
 
 const user = JSON.parse(sessionStorage.getItem("user"));
 

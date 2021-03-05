@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 
-import Backdrop from "./Backdrop";
-import ModalCloseIcon from "../components/svgIcons/ModalCloseIcon";
-import Button from "../components/CtaButton";
+import Backdrop from "../shared/Backdrop";
+import ModalCloseIcon from "../shared/svgIcons/ModalCloseIcon";
+import Button from "../shared/CtaButton";
 
 const ExportModal = (props) => {
   const [fileType, setFileType] = useState("pdf");

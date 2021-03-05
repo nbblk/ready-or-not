@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
-import NewArticleIcon from "../components/NewArticle";
-import Article from "../components/Article";
+import NewArticleIcon from "../components/articles/NewArticle";
+import Article from "../components/articles/Article";
 
 class ArticleContainer extends Component {
   state = {
