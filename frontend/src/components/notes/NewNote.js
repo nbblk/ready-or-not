@@ -26,7 +26,11 @@ const newNote = (props) => {
           keydown={props.keydown}
           value={props.article.tag}
         />
-        <ul className="m-3 w-3/4 flex flex-row justify-start items-center">
+         <TagItem
+            tags={props.article.tags}
+            click={(index) => props.removeTag(index)}
+          />
+        {/* <ul className="m-3 w-3/4 flex flex-row justify-start items-center">
           {props.article.tags
             ? props.article.tags.map((tag, index) => {
                 return (
@@ -37,8 +41,8 @@ const newNote = (props) => {
                   />
                 );
               })
-            : null}
-        </ul>
+            : null} 
+            //</ul>*/}
         <Input
           type="date"
           label="due"

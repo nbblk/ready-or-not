@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import NewNote from "../components/notes/NewNote";
 import OldNotes from "../components/notes/OldNotes";
+import fetchData from "../modules/httpRequest";
 
 const user = JSON.parse(sessionStorage.getItem("user"));
 
@@ -10,20 +11,19 @@ class NoteContainer extends Component {
     notes: [],
   };
 
-  async fetchData() {
+  fetchNotes() {
     const articleId = this.props.location.state.article[0]._id;
-    const response = await fetch(
-      `http://localhost:8080/api/v1/notes?uid=${user._id}&oauth=${user.oauth}&articleId=${articleId}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "X-Access-Token": `${user.token}`,
-        },
-      }
-    );
-    const list = await response.json();
-    if (list.length > 0) this.setState({ notes: list[0].articles[0].notes });
+    fetchData(
+      `http://localhost:8080/api/v1/notes?uid=${user._id}&articleId=${articleId}`
+    )
+      .then(async (response) => {
+        const list = await response.json();
+        if (list.length > 0)
+          this.setState({ notes: list[0].articles[0].notes });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   findNote(_id) {
@@ -84,13 +84,9 @@ class NoteContainer extends Component {
   };
 
   handleEnter = (event) => {
-    if ((event.charCode || event.keyCode) === 13) {
+    if (event.key === "Enter" && event.target.name === "tag") {
       event.preventDefault();
-      if (event.target.name === "tag") {
-        this.updateTag(event.target.value);
-      }
-    } else {
-      return;
+      this.updateTag(event.target.value);
     }
   };
 
@@ -137,42 +133,32 @@ class NoteContainer extends Component {
     const user = JSON.parse(sessionStorage.getItem("user"));
 
     event.preventDefault();
-    fetch(
-      `http://localhost:8080/api/v1/notes/new?uid=${user._id}&oauth=${user.oauth}`,
-      {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Access-Token": `${user.token}`,
-        },
-        credentials: "include",
-        body: JSON.stringify({ note: this.state.article }),
-      }
-    )
+    fetchData(`http://localhost:8080/api/v1/notes/new?uid=${user._id}`, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ note: this.state.article }),
+    })
       .then(async (response) => {
-        if (response.status === 200) {
-          return response.json();
-        }
-      })
-      .then(async (data) => {
-        const arr = [...this.state.notes]
+        const data = await response.json();
+        const arr = [...this.state.notes];
         arr.push(data);
-        await this.setState({ notes: arr });
+        this.setState({ notes: arr });
       })
       .catch((error) => {
         console.error(error);
       });
   };
 
-
-  async componentDidMount() {
-    await this.fetchData();
-    await this.setState({
+  componentDidMount() {
+    this.fetchNotes();
+    this.setState({
       ...this.state.notes,
       article: this.props.location.state.article[0],
     });
-    await this.setState({
+    this.setState({
       ...this.state.notes,
       article: { ...this.state.article, tag: "", note: "" },
     });
