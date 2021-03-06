@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Backdrop from "../shared/Backdrop";
 import ModalCloseIcon from "../shared/svgIcons/ModalCloseIcon";
 import Button from "../shared/CtaButton";
+import Spinner from "../shared/spinner/Spinner";
 
 const ExportModal = (props) => {
   const [fileType, setFileType] = useState("pdf");
@@ -15,6 +16,7 @@ const ExportModal = (props) => {
 
   return (
     <Backdrop>
+      {props.loading ? <Spinner /> : null}
       <div className="relative w-full md:w-1/5 h-1/3 md:w-1/5 md:h-1/4 p-3.5 bg-beige border border-black flex flex-col justify-around items-center">
         <ModalCloseIcon click={() => window.history.go(-1)} />
         <select

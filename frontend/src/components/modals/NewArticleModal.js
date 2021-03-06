@@ -5,42 +5,42 @@ import ModalCloseIcon from "../shared/svgIcons/ModalCloseIcon";
 import Input from "../shared/InputText";
 import TagItem from "../shared/TagItem";
 import CtaButton from "../shared/CtaButton";
+import fetchData from "../../modules/httpRequest";
+import Spinner from "../shared/spinner/Spinner";
 
 const NewArticleModal = (props) => {
   const history = useHistory();
-  const d = new Date().toISOString().substr(0, 10);
   const [article, setArticle] = useState({
     url: "",
     tag: "",
     tags: [],
-    due: d,
+    due: new Date().toISOString().substr(0, 10)
   });
-
+  const [loading, setLoading] = useState(false);
+  
   const handleSubmit = (event) => {
     event.preventDefault();
     const user = JSON.parse(sessionStorage.getItem("user"));
-
-    fetch(
+    setLoading(true);
+    fetchData(
       `http://localhost:8080/api/v1/article/new?uid=${user._id}&oauth=${user.oauth}`,
       {
         method: "POST",
         mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Access-Token": `${user.token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ article }),
       }
     )
       .then(() => {
+        setLoading(false);
         history.replace("/main");
       })
       .catch((error) => {
         console.error(error);
       });
-  }
-  
+  };
+
   const removeTag = (index) => {
     const tags = [...article.tags];
     tags.splice(index);
@@ -70,7 +70,8 @@ const NewArticleModal = (props) => {
 
   return (
     <Backdrop>
-      <div className="relative h-3/4 xl:h-3/5 w-full xl:w-1/3 p-3.5 flex flex-col justify-center items-center bg-beige fixed z-50">
+    {loading ? <Spinner /> : null}
+      <div className="relative h-3/4 xl:h-3/5 w-full xl:w-1/3 p-3.5 flex flex-col justify-center items-center bg-beige fixed z-10">
         <Link to="/">
           <ModalCloseIcon />
         </Link>

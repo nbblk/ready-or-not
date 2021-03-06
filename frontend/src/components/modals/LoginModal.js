@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { GoogleLogin } from "react-google-login";
 import GitHubLogin from "react-github-login";
@@ -35,7 +35,7 @@ const LoginModal = (props) => {
         />
         <GitHubLogin
           clientId={GITHUB_OAUTH_CLIENT_ID}
-          redirectUri="" 
+          redirectUri=""
           className="flex justify-center items-center h-1/6 w-full md:w-3/4 m-3 border border-solid border-black bg-white text-center font-md poppins"
           onSuccess={(tempCode) => auth.loginSuccess(tempCode, "github")}
           onFailure={(error, detail) => auth.loginFailure(error, detail)}

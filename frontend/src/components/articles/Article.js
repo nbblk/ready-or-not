@@ -22,6 +22,7 @@ const Article = (props) => {
       <a
         href={props.url}
         target="_blank"
+        rel="noreferrer"
         className="block h-1/3 m-5 text-2xl md:text-lg text-left font-archivo text-black text-left hover:text-purple cursor-pointer"
       >
         {props.title}

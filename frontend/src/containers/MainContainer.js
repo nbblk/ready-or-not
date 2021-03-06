@@ -2,26 +2,20 @@ import React, { Component } from "react";
 import Archive from "../components/Archive";
 import Searchbar from "../components/shared/Searchbar";
 import ArticleContainer from "./ArticleContainer";
-
+import fetchData from "../modules/httpRequest";
 
 class Main extends Component {
   state = {
     keyword: null,
     result: [],
     submit: false,
+    loading: false,
   };
 
-  async fetchSearchResult() {
+  fetchSearchResult() {
     const user = JSON.parse(sessionStorage.getItem("user"));
-    await fetch(
-      `http://localhost:8080/api/v1/search?uid=${user._id}&oauth=${user.oauth}&keyword=${this.state.keyword}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "X-Access-Token": `${user.token}`,
-        },
-      }
+    fetchData(
+      `http://localhost:8080/api/v1/search?uid=${user._id}&keyword=${this.state.keyword}`
     )
       .then(async (response) => {
         const jsonData = await response.json();
@@ -29,13 +23,15 @@ class Main extends Component {
         for (let i = 0; i < jsonData.length; i++) {
           results.push(jsonData[i].articles);
         }
-        await this.setState({
+        this.setState({
           ...this.state,
           result: results,
           submit: false,
+          loading: false,
         });
       })
       .catch((error) => {
+        this.setState({ ...this.state, loading: false });
         console.error(error);
       });
   }
@@ -46,13 +42,13 @@ class Main extends Component {
     }
   }
 
-  handleInputChange = event => {
+  handleInputChange = (event) => {
     this.setState({ ...this.state, keyword: event.target.value.trim() });
   };
 
-  handleEnter = event => {
+  handleEnter = (event) => {
     if (event.keycode === 13 || event.key === "Enter") {
-      this.setState({ ...this.state, submit: true });
+      this.setState({ ...this.state, submit: true, loading: true });
     }
   };
 
@@ -64,9 +60,9 @@ class Main extends Component {
     }
 
     if (content === "article") {
-      el = <ArticleContainer articles={this.state.result} />
+      el = <ArticleContainer articles={this.state.result} />;
     }
-    
+
     return (
       <main className="w-full h-full py-20 md:py-40 bg-beige-yellowish flex flex-col justify-center items-center">
         <Searchbar

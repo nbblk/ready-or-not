@@ -3,6 +3,7 @@ import { Redirect } from "react-router-dom";
 import NewArticleIcon from "../components/articles/NewArticle";
 import Article from "../components/articles/Article";
 import fetchData from "../modules/httpRequest";
+import Spinner from "../components/shared/spinner/Spinner";
 
 class ArticleContainer extends Component {
   state = {
@@ -10,10 +11,12 @@ class ArticleContainer extends Component {
     isSearchedResult: false,
     isRedirect: false,
     redirectId: null,
+    loading: false
   };
 
   async fetchArticles() {
     const user = JSON.parse(sessionStorage.getItem("user"));
+    this.setState({ ...this.state, loading: true });
     await fetchData(`http://localhost:8080/api/v1/articles?uid=${user._id}`)
       .then(async (response) => {
         const list = await response.json();
@@ -22,10 +25,12 @@ class ArticleContainer extends Component {
             ...this.state,
             articles: list[0].articles,
             mode: "list",
+            loading: false
           });
         }
       })
       .catch((error) => {
+        this.setState({ ...this.state, loading: false });
         console.log(error);
       });
   }
@@ -142,7 +147,7 @@ class ArticleContainer extends Component {
 
   componentDidMount() {
     if (this.props.articles.length > 0) {
-      this.setState({ articles: this.props.articles, isSearchedResult: true });
+      this.setState({ articles: this.props.articles, isSearchedResult: true, loading: this.props.loading });
     } else {
       this.fetchArticles();
     }
@@ -151,6 +156,7 @@ class ArticleContainer extends Component {
   render() {
     return (
       <section className="w-full h-full p-10 flex flex-col flex-wrap md:flex-row justify-center itmes-center">
+        {this.state.loading ? <Spinner /> : null}
         {this.state.isRedirect ? (
           <Redirect
             to={{
