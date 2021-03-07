@@ -163,15 +163,15 @@ const upsertNote = async (data) => {
       .collection("user")
       .findOneAndUpdate(
         { _id: ObjectID(data._id), "articles._id": ObjectID(data.articleId) },
+        { $set: { "articles.$.tags": data.tags, "articles.$.due": data.due } },
         {
           $addToSet: {
             "articles.$.notes": {
-              _id: ObjectID(data.noteId),
+              _id: ObjectID(),
               content: data.note,
             },
           },
         },
-        { $set: { "articles.$.tags": data.tags, "articles.$.due": data.due } },
         { upsert: true }
       );
 
