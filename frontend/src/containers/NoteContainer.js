@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 import NewNote from "../components/notes/NewNote";
 import OldNotes from "../components/notes/OldNotes";
 import fetchData from "../modules/httpRequest";
-import { PrivateRoute } from "../context/Auth";
 import ExportModal from "../components/modals/ExportModal";
 import { download } from "../modules/exports";
 

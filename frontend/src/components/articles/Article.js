@@ -14,7 +14,7 @@ const Article = (props) => {
         />
         <img
           className="w-full h-full object-cover"
-          src={props.image}
+          src={props.image || '/placeholder.jpg'}
           alt="img"
         />
       </div>
