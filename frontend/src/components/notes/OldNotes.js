@@ -5,6 +5,7 @@ import ArticleCloseIcon from "../shared/svgIcons/ArticleCloseIcon";
 const OldNotes = (props) => {
   const location = useLocation();
   const articleId = location.pathname.split("/").pop();
+
   return (
     <section className="w-full md:w-1/2 h-full p-10 flex flex-col justify-center items-center overflow-scroll">
       <h1 className="w-full self-start m-5 font-archivo text-3xl">Notes</h1>

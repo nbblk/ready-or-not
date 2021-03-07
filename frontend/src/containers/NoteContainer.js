@@ -1,14 +1,19 @@
 import React, { Component } from "react";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 import NewNote from "../components/notes/NewNote";
 import OldNotes from "../components/notes/OldNotes";
 import fetchData from "../modules/httpRequest";
+import { PrivateRoute } from "../context/Auth";
+import ExportModal from "../components/modals/ExportModal";
+import { download } from "../modules/exports";
 
 const user = JSON.parse(sessionStorage.getItem("user"));
 
 class NoteContainer extends Component {
   state = {
     article: null,
-    notes: []
+    notes: [],
+    loading: false,
   };
 
   fetchNotes() {
@@ -38,12 +43,12 @@ class NoteContainer extends Component {
     return idx;
   }
 
-  async updateNote(_id) {
+  updateNote(_id) {
     const arr = [...this.state.notes];
     const found = this.findNote(_id);
     if (found !== undefined) {
       arr.splice(found, 1);
-      await this.setState({ notes: arr });
+      this.setState({ notes: arr });
     } else {
       throw Error(`Note ${_id} not found`);
     }
@@ -62,12 +67,12 @@ class NoteContainer extends Component {
         },
       }
     )
-    .then((response) => {
-      this.updateNote(_id);
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+      .then((response) => {
+        this.updateNote(_id);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   handleInputChange = (event) => {
@@ -89,7 +94,8 @@ class NoteContainer extends Component {
 
   updateTag = (newValue) => {
     const tags = [...this.state.article.tags];
-    const isDuplicate = tags.length > 0 ? this.checkDuplicateTag(newValue) : true;
+    const isDuplicate =
+      tags.length > 0 ? this.checkDuplicateTag(newValue) : true;
     if (isDuplicate || tags.length > 10) {
       return;
     } else {
@@ -152,6 +158,23 @@ class NoteContainer extends Component {
       });
   };
 
+  handleExport = (fileType, articleId) => {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    this.setState({ ...this.state, loading: true });
+    fetchData(
+      `http://localhost:8080/api/v1/export?uid=${user._id}&articleId=${articleId}&type=${fileType}`
+    )
+      .then((response) => {
+        this.setState({ ...this.state, loading: false });
+        return response.text();
+      })
+      .then((content) => download(content, `${articleId}.${fileType}`))
+      .catch((err) => {
+        this.setState({ ...this.state, loading: false });
+        console.error(err);
+      });
+  };
+
   componentDidMount() {
     this.fetchNotes();
     this.setState({
@@ -162,20 +185,34 @@ class NoteContainer extends Component {
 
   render() {
     return (
-      <section className="w-full h-full bg-beige-yellowish flex flex-col md:flex-row">
-        <NewNote
-          article={this.state.article || this.props.location.state.article[0] }
-          change={(event) => this.handleInputChange(event)}
-          keydown={(event) => this.handleEnter(event)}
-          removeTag={(index) => this.handleTagClick(index)}
-          submit={(event) => this.handleSubmit(event)}
+      <Router>
+        <Route
+          path="/export"
+          render={(props) => (
+            <ExportModal
+              {...props}
+              export={(fileType, articleId) =>
+                this.handleExport(fileType, articleId)
+              }
+              loading={this.state.loading}
+            />
+          )}
         />
-        <div className="absolute hidden lg:block h-2/3 left-1/2 top-64 -ml-3 border border-r-0 border-black bg-black"></div>
-        <OldNotes
-          notes={this.state.notes}
-          delete={(_id) => this.handleDelete(_id)}
-        />
-      </section>
+        <section className="w-full h-full bg-beige-yellowish flex flex-col md:flex-row">
+          <NewNote
+            article={this.state.article || this.props.location.state.article[0]}
+            change={(event) => this.handleInputChange(event)}
+            keydown={(event) => this.handleEnter(event)}
+            removeTag={(index) => this.handleTagClick(index)}
+            submit={(event) => this.handleSubmit(event)}
+          />
+          <div className="absolute hidden lg:block h-2/3 left-1/2 top-64 -ml-3 border border-r-0 border-black bg-black"></div>
+          <OldNotes
+            notes={this.state.notes}
+            delete={(_id) => this.handleDelete(_id)}
+          />
+        </section>
+      </Router>
     );
   }
 }

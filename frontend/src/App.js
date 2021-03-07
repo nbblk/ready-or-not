@@ -14,37 +14,11 @@ import ArticleContainer from "./containers/ArticleContainer";
 import NoteContainer from "./containers/NoteContainer";
 import Landing from "./components/landingPage/Landing";
 import Footer from "./components/shared/Footer";
-import ExportModal from "./components/modals/ExportModal";
 import About from "./components/About";
-import { download } from "./modules/exports";
-import fetchData from "./modules/httpRequest";
 import Spinner from "./components/shared/spinner/Spinner";
 
 function App() {
   const auth = useAuth();
-  const [loading, setLoading] = useState(false);
-
-  const handleExport = (fileType, articleId) => {
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    setLoading(true);
-    fetchData(
-      `http://localhost:8080/api/v1/export?uid=${user._id}&articleId=${articleId}&type=${fileType}`,
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    )
-      .then((response) => {
-        setLoading(false);
-        response.text();
-      })
-      .then((content) => download(content, `${articleId}.${fileType}`))
-      .catch((err) => {
-        setLoading(false);
-        console.error(err);
-      });
-  };
-
   return (
     <Router>
       {auth.loggedOut ? <Spinner /> : null}
@@ -83,20 +57,7 @@ function App() {
                 render={(props) => <NoteContainer {...props} />}
               />
             </PrivateRoute>
-            <PrivateRoute path="/export">
-              <Route
-                path="/export"
-                render={(props) => (
-                  <ExportModal
-                    {...props}
-                    export={(fileType, articleId) =>
-                      handleExport(fileType, articleId)
-                    }
-                    loading={loading}
-                  />
-                )}
-              />
-            </PrivateRoute>
+            <PrivateRoute path="/export" />
           </Switch>
         </div>
         <Footer />

@@ -6,7 +6,7 @@ const ModalCloseIcon = (props) => {
 
   return (
     <div
-      className="absolute top-0 right-0 w-8 h-8 m-3"
+      className="absolute top-0 right-0 w-8 h-8 m-3 cursor-pointer"
       onClick={() => history.goBack()}
     >
       <svg viewBox="0 0 40 40">
