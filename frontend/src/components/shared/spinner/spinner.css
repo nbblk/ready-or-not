@@ -10,14 +10,17 @@
   animation: load7 1.8s infinite ease-in-out;
 }
 .loader {
-position: fixed;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   color: #583BAC;
   font-size: 10px;
   margin: 80px auto;
   text-indent: -9999em;
-  -webkit-transform: translateZ(0);
+  /* -webkit-transform: translateZ(0);
   -ms-transform: translateZ(0);
-  transform: translateZ(0);
+  transform: translateZ(0); */
   -webkit-animation-delay: -0.16s;
   animation-delay: -0.16s;
   z-index: 20;

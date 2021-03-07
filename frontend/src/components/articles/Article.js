@@ -4,7 +4,7 @@ import TagItem from "../shared/TagItem";
 
 const Article = (props) => {
   return (
-    <article className="w-full md:w-1/3 md:m-5 my-3 p-3 border border-solid border-black bg-white rounded">
+    <article className="w-full md:w-1/3 md:m-5 my-3 p-3 border border-solid border-black bg-white rounded overflow-auto">
       <div className="w-auto h-2/3 bg-transparent overflow-hidden">
         <ArticleIcons
           isArchived={props.isArchived}

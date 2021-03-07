@@ -2,7 +2,7 @@ import React from "react";
 
 const tagItem = (props) => {
   return (
-    <ul className="table my-2">
+    <ul className="my-3 flex flex-wrap">
       {props.tags ? props.tags.map((tag, index) => {
         return (
           <li
