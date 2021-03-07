@@ -8,11 +8,11 @@ const user = JSON.parse(sessionStorage.getItem("user"));
 class NoteContainer extends Component {
   state = {
     article: null,
-    notes: [],
+    notes: []
   };
 
   fetchNotes() {
-    const articleId = this.props.location.state.article[0]._id;
+    const articleId = this.props.location.state.articleId;
     fetchData(
       `http://localhost:8080/api/v1/notes?uid=${user._id}&articleId=${articleId}`
     )
@@ -49,28 +49,25 @@ class NoteContainer extends Component {
     }
   }
 
-  async handleDelete(_id) {
+  handleDelete(_id) {
     const articleId = this.props.location.state.article[0]._id;
-    await fetch(
-      `http://localhost:8080/api/v1/notes?uid=${user._id}&oauth=${user.oauth}&articleId=${articleId}`,
+    fetchData(
+      `http://localhost:8080/api/v1/notes?uid=${user._id}&articleId=${articleId}`,
       {
         method: "DELETE",
         body: JSON.stringify({ noteId: _id }),
         mode: "cors",
         headers: {
           "Content-Type": "application/json",
-          "X-Access-Token": `${user.token}`,
         },
       }
     )
-      .then(async (response) => {
-        if (response.status === 201) {
-          await this.updateNote(_id);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    .then((response) => {
+      this.updateNote(_id);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   handleInputChange = (event) => {
@@ -92,7 +89,7 @@ class NoteContainer extends Component {
 
   updateTag = (newValue) => {
     const tags = [...this.state.article.tags];
-    const isDuplicate = tags ? this.checkDuplicateTag(newValue) : true;
+    const isDuplicate = tags.length > 0 ? this.checkDuplicateTag(newValue) : true;
     if (isDuplicate || tags.length > 10) {
       return;
     } else {
@@ -130,9 +127,8 @@ class NoteContainer extends Component {
   };
 
   handleSubmit = (event) => {
-    const user = JSON.parse(sessionStorage.getItem("user"));
-
     event.preventDefault();
+    const user = JSON.parse(sessionStorage.getItem("user"));
     fetchData(`http://localhost:8080/api/v1/notes/new?uid=${user._id}`, {
       method: "POST",
       mode: "cors",
@@ -145,7 +141,11 @@ class NoteContainer extends Component {
         const data = await response.json();
         const arr = [...this.state.notes];
         arr.push(data);
-        this.setState({ notes: arr });
+        this.setState({
+          ...this.state,
+          article: { ...this.state.article, note: "" }, // clear textarea
+          notes: arr,
+        });
       })
       .catch((error) => {
         console.error(error);
@@ -158,27 +158,19 @@ class NoteContainer extends Component {
       ...this.state.notes,
       article: this.props.location.state.article[0],
     });
-    this.setState({
-      ...this.state.notes,
-      article: { ...this.state.article, tag: "", note: "" },
-    });
   }
 
   render() {
     return (
       <section className="w-full h-full bg-beige-yellowish flex flex-col md:flex-row">
         <NewNote
-          article={
-            !this.state.article
-              ? this.props.location.state.article[0]
-              : this.state.article
-          }
+          article={this.state.article || this.props.location.state.article[0] }
           change={(event) => this.handleInputChange(event)}
           keydown={(event) => this.handleEnter(event)}
           removeTag={(index) => this.handleTagClick(index)}
           submit={(event) => this.handleSubmit(event)}
         />
-        <div className="absolute hidden lg:block h-full left-1/2 top-64 -ml-3 border border-r-0 border-black bg-black"></div>
+        <div className="absolute hidden lg:block h-2/3 left-1/2 top-64 -ml-3 border border-r-0 border-black bg-black"></div>
         <OldNotes
           notes={this.state.notes}
           delete={(_id) => this.handleDelete(_id)}

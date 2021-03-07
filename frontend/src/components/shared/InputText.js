@@ -28,6 +28,7 @@ const inputText = (props) => {
           rows="10"
           wrap="hard"
           name={props.label}
+          value={props.value}
           onChange={props.change}
         ></textarea>
       </div>

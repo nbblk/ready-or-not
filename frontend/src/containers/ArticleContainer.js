@@ -17,7 +17,7 @@ class ArticleContainer extends Component {
   async fetchArticles() {
     const user = JSON.parse(sessionStorage.getItem("user"));
     this.setState({ ...this.state, loading: true });
-    await fetchData(`http://localhost:8080/api/v1/articles?uid=${user._id}`)
+    fetchData(`http://localhost:8080/api/v1/articles?uid=${user._id}`)
       .then(async (response) => {
         const list = await response.json();
         if (list) {
@@ -47,63 +47,62 @@ class ArticleContainer extends Component {
     return idx;
   }
 
-  async updateArticle(_id) {
+  updateArticle(_id) {
     const arr = [...this.state.articles];
     const found = this.findArticle(_id);
     if (found !== undefined) {
       arr.splice(found);
-      await this.setState({ articles: arr });
+      this.setState({ articles: arr });
     } else {
       throw Error(`article ${_id} not found`);
     }
   }
 
-  async handleArchive(article) {
+  handleArchive(article) {
     const user = JSON.parse(sessionStorage.getItem("user"));
-    const repsonse = await fetch(
-      `http://localhost:8080/api/v1/archive?uid=${user._id}&oauth=${user.oauth}`,
+    fetchData(
+      `http://localhost:8080/api/v1/archive?uid=${user._id}`,
       {
         method: "PUT",
         body: JSON.stringify(article),
         mode: "cors",
         headers: {
           "Content-Type": "application/json",
-          "X-Access-Token": `${user.token}`,
         },
       }
-    );
-    if (repsonse.status === 201) {
+    )
+    .then(async (response) => {
       await this.updateArticle(article._id);
-    }
+    })
+    .catch((error) => {
+      console.error(error);
+    })
   }
 
   handleAddNote = (_id) => {
     this.setState({ isRedirect: true, redirectId: _id });
   };
 
-  async handleDelete(_id) {
+  handleDelete(_id) {
     const user = JSON.parse(sessionStorage.getItem("user"));
 
-    fetch(
-      `http://localhost:8080/api/v1/articles?uid=${user._id}&oauth=${user.oauth}`,
+    fetchData(
+      `http://localhost:8080/api/v1/articles?uid=${user._id}`,
       {
         method: "DELETE",
         body: JSON.stringify({ _id: _id }),
         mode: "cors",
         headers: {
           "Content-Type": "application/json",
-          "X-Access-Token": `${user.token}`,
         },
       }
     )
-      .then(async (response) => {
-        if (response.status === 200) {
-          await this.updateArticle(_id);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    .then(async (response) => {
+        await this.updateArticle(_id);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   getArticle = () => {
@@ -161,7 +160,7 @@ class ArticleContainer extends Component {
           <Redirect
             to={{
               pathname: `/notes/${this.state.redirectId}`,
-              state: { article: this.getArticle() },
+              state: { articleId: this.state.redirectId, article: this.getArticle() },
             }}
           />
         ) : null}
