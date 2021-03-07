@@ -76,7 +76,12 @@ const getImage = async (page, uri) => {
       return imgs[0].src;
     }
     return null;
+  })
+  .catch((error) => {
+    console.error(error);
+    return null;
   });
+  
   return image;
 };
 
