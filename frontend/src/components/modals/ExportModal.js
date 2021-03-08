@@ -8,7 +8,7 @@ import Spinner from "../shared/spinner/Spinner";
 const ExportModal = (props) => {
   const [fileType, setFileType] = useState("pdf");
   const [articleId] = useState(props.location.state.articleId);
-
+ 
   const handleOption = (event) => {
     const value = event.target.value;
     setFileType(value);

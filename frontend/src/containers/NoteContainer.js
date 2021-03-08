@@ -1,10 +1,14 @@
 import React, { Component } from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
+import { ErrorBoundary } from "react-error-boundary";
+
 import NewNote from "../components/notes/NewNote";
 import OldNotes from "../components/notes/OldNotes";
 import fetchData from "../modules/httpRequest";
 import ExportModal from "../components/modals/ExportModal";
 import { download } from "../modules/exports";
+import ErrorFallback from "../components/modals/ErrorFallback";
+import Backdrop from "../components/shared/Backdrop";
 
 const user = JSON.parse(sessionStorage.getItem("user"));
 
@@ -13,6 +17,8 @@ class NoteContainer extends Component {
     article: null,
     notes: [],
     loading: false,
+    error: false,
+    errorMessage: "",
   };
 
   fetchNotes() {
@@ -23,10 +29,14 @@ class NoteContainer extends Component {
       .then(async (response) => {
         const list = await response.json();
         if (list.length > 0)
-          this.setState({ notes: list[0].articles[0].notes });
+          this.setState({ ...this.state, notes: list[0].articles[0].notes });
       })
       .catch((error) => {
-        console.error(error);
+        this.setState({
+          ...this.state,
+          error: true,
+          errorMessage: error.message,
+        });
       });
   }
 
@@ -70,7 +80,11 @@ class NoteContainer extends Component {
         this.updateNote(_id);
       })
       .catch((error) => {
-        console.error(error);
+        this.setState({
+          ...this.state,
+          error: true,
+          errorMessage: error.message,
+        });
       });
   }
 
@@ -153,7 +167,11 @@ class NoteContainer extends Component {
         });
       })
       .catch((error) => {
-        console.error(error);
+        this.setState({
+          ...this.state,
+          error: true,
+          errorMessage: error.message,
+        });
       });
   };
 
@@ -169,8 +187,12 @@ class NoteContainer extends Component {
       })
       .then((content) => download(content, `${articleId}.${fileType}`))
       .catch((err) => {
-        this.setState({ ...this.state, loading: false });
-        console.error(err);
+        this.setState({
+          ...this.state,
+          loading: false,
+          error: true,
+          errorMessage: err.message,
+        });
       });
   };
 
@@ -184,34 +206,43 @@ class NoteContainer extends Component {
 
   render() {
     return (
-      <Router>
-        <Route
-          path="/export"
-          render={(props) => (
-            <ExportModal
-              {...props}
-              export={(fileType, articleId) =>
-                this.handleExport(fileType, articleId)
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        {this.state.error ? (
+          <Backdrop>
+            <ErrorFallback error={{ message: this.state.errorMessage }} />
+          </Backdrop>
+        ) : null}
+        <Router>
+          <Route
+            path="/export"
+            render={(props) => (
+              <ExportModal
+                {...props}
+                export={(fileType, articleId) =>
+                  this.handleExport(fileType, articleId)
+                }
+                loading={this.state.loading}
+              />
+            )}
+          />
+          <section className="w-full h-full bg-beige-yellowish flex flex-col md:flex-row">
+            <NewNote
+              article={
+                this.state.article || this.props.location.state.article[0]
               }
-              loading={this.state.loading}
+              change={(event) => this.handleInputChange(event)}
+              keydown={(event) => this.handleEnter(event)}
+              removeTag={(index) => this.handleTagClick(index)}
+              submit={(event) => this.handleSubmit(event)}
             />
-          )}
-        />
-        <section className="w-full h-full bg-beige-yellowish flex flex-col md:flex-row">
-          <NewNote
-            article={this.state.article || this.props.location.state.article[0]}
-            change={(event) => this.handleInputChange(event)}
-            keydown={(event) => this.handleEnter(event)}
-            removeTag={(index) => this.handleTagClick(index)}
-            submit={(event) => this.handleSubmit(event)}
-          />
-          <div className="absolute hidden lg:block h-2/3 left-1/2 top-64 -ml-3 border border-r-0 border-black bg-black"></div>
-          <OldNotes
-            notes={this.state.notes}
-            delete={(_id) => this.handleDelete(_id)}
-          />
-        </section>
-      </Router>
+            <div className="absolute hidden lg:block h-2/3 left-1/2 top-64 -ml-3 border border-r-0 border-black bg-black"></div>
+            <OldNotes
+              notes={this.state.notes}
+              delete={(_id) => this.handleDelete(_id)}
+            />
+          </section>
+        </Router>
+      </ErrorBoundary>
     );
   }
 }

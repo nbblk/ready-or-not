@@ -48,6 +48,7 @@ function useProvideAuth() {
 
   const loginFailure = async (error, detail) => {
     console.error(error, detail);
+    setError(error.message);
   };
 
   const logout = (redirect) => {

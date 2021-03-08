@@ -1,8 +1,12 @@
 import React, { Component } from "react";
-import Archive from "../components/Archive";
+import { ErrorBoundary } from "react-error-boundary";
+
 import Searchbar from "../components/shared/Searchbar";
+import ArchiveContainer from "./ArchiveContainer";
 import ArticleContainer from "./ArticleContainer";
 import fetchData from "../modules/httpRequest";
+import ErrorFallback from "../components/modals/ErrorFallback";
+import Backdrop from "../components/shared/Backdrop";
 
 class Main extends Component {
   state = {
@@ -10,6 +14,8 @@ class Main extends Component {
     result: [],
     submit: false,
     loading: false,
+    error: false,
+    errorMessage: "",
   };
 
   fetchSearchResult() {
@@ -31,8 +37,12 @@ class Main extends Component {
         });
       })
       .catch((error) => {
-        this.setState({ ...this.state, loading: false });
-        console.error(error);
+        this.setState({
+          ...this.state,
+          loading: false,
+          error: true,
+          errorMessage: error.message,
+        });
       });
   }
 
@@ -56,7 +66,7 @@ class Main extends Component {
     const content = this.props.content;
     let el = null;
     if (content === "archive") {
-      el = <Archive />;
+      el = <ArchiveContainer />;
     }
 
     if (content === "article") {
@@ -64,13 +74,20 @@ class Main extends Component {
     }
 
     return (
-      <main className="w-full h-full py-20 md:py-40 bg-beige-yellowish flex flex-col justify-center items-center">
-        <Searchbar
-          change={(event) => this.handleInputChange(event)}
-          keydown={(event) => this.handleEnter(event)}
-        />
-        {el}
-      </main>
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        {this.state.error ? (
+          <Backdrop>
+            <ErrorFallback error={{ message: this.state.errorMessage }} />
+          </Backdrop>
+        ) : null}
+        <main className="w-full h-full py-20 md:py-40 bg-beige-yellowish flex flex-col justify-center items-center">
+          <Searchbar
+            change={(event) => this.handleInputChange(event)}
+            keydown={(event) => this.handleEnter(event)}
+          />
+          {el}
+        </main>
+      </ErrorBoundary>
     );
   }
 }

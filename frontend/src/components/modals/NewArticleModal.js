@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
+import { useErrorHandler } from "react-error-boundary";
+
 import Backdrop from "../shared/Backdrop";
 import ModalCloseIcon from "../shared/svgIcons/ModalCloseIcon";
 import Input from "../shared/InputText";
@@ -10,6 +12,7 @@ import Spinner from "../shared/spinner/Spinner";
 
 const NewArticleModal = (props) => {
   const history = useHistory();
+  const handleError = useErrorHandler();
   const [article, setArticle] = useState({
     url: "",
     tag: "",
@@ -23,12 +26,11 @@ const NewArticleModal = (props) => {
     const user = JSON.parse(sessionStorage.getItem("user"));
     setLoading(true);
     fetchData(
-      `http://localhost:8080/api/v1/article/new?uid=${user._id}&oauth=${user.oauth}`,
+      `http://localhost:8080/api/v1/article/new?uid=${user._id}`,
       {
         method: "POST",
         mode: "cors",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ article }),
       }
     )
@@ -37,6 +39,7 @@ const NewArticleModal = (props) => {
         history.replace("/main");
       })
       .catch((error) => {
+        handleError(error);
         console.error(error);
       });
   };

@@ -1,9 +1,13 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
+import { ErrorBoundary } from "react-error-boundary";
+
 import NewArticleIcon from "../components/articles/NewArticle";
 import Article from "../components/articles/Article";
 import fetchData from "../modules/httpRequest";
 import Spinner from "../components/shared/spinner/Spinner";
+import ErrorFallback from "../components/modals/ErrorFallback";
+import Backdrop from "../components/shared/Backdrop";
 
 class ArticleContainer extends Component {
   state = {
@@ -11,7 +15,9 @@ class ArticleContainer extends Component {
     isSearchedResult: false,
     isRedirect: false,
     redirectId: null,
-    loading: false
+    loading: false,
+    error: false,
+    errorMessage: ''
   };
 
   async fetchArticles() {
@@ -25,13 +31,17 @@ class ArticleContainer extends Component {
             ...this.state,
             articles: list[0].articles,
             mode: "list",
-            loading: false
+            loading: false,
           });
         }
       })
       .catch((error) => {
-        this.setState({ ...this.state, loading: false });
-        console.log(error);
+        this.setState({
+          ...this.state,
+          loading: false,
+          error: true,
+          errorMessage: error.message,
+        });
       });
   }
 
@@ -60,23 +70,25 @@ class ArticleContainer extends Component {
 
   handleArchive(article) {
     const user = JSON.parse(sessionStorage.getItem("user"));
-    fetchData(
-      `http://localhost:8080/api/v1/archive?uid=${user._id}`,
-      {
-        method: "PUT",
-        body: JSON.stringify(article),
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
-    .then(async (response) => {
-      await this.updateArticle(article._id);
+    fetchData(`http://localhost:8080/api/v1/archive?uid=${user._id}`, {
+      method: "PUT",
+      body: JSON.stringify(article),
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
-    .catch((error) => {
-      console.error(error);
-    })
+      .then(async (response) => {
+        await this.updateArticle(article._id);
+      })
+      .catch((error) => {
+        this.setState({
+          ...this.state,
+          loading: false,
+          error: true,
+          errorMessage: error.message,
+        });
+      });
   }
 
   handleAddNote = (_id) => {
@@ -86,23 +98,25 @@ class ArticleContainer extends Component {
   handleDelete(_id) {
     const user = JSON.parse(sessionStorage.getItem("user"));
 
-    fetchData(
-      `http://localhost:8080/api/v1/articles?uid=${user._id}`,
-      {
-        method: "DELETE",
-        body: JSON.stringify({ _id: _id }),
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
-    .then(async (response) => {
-        await this.updateArticle(_id);
+    fetchData(`http://localhost:8080/api/v1/articles?uid=${user._id}`, {
+      method: "DELETE",
+      body: JSON.stringify({ _id: _id }),
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
-    .catch((error) => {
-      console.error(error);
-    });
+      .then(async (response) => {
+        await this.updateArticle(_id);
+      })
+      .catch((error) => {
+        this.setState({
+          ...this.state,
+          loading: false,
+          error: true,
+          errorMessage: error.message,
+        });
+      });
   }
 
   getArticle = () => {
@@ -146,27 +160,41 @@ class ArticleContainer extends Component {
 
   componentDidMount() {
     if (this.props.articles.length > 0) {
-      this.setState({ articles: this.props.articles, isSearchedResult: true, loading: this.props.loading });
+      this.setState({
+        articles: this.props.articles,
+        isSearchedResult: true,
+        loading: this.props.loading,
+      });
     } else {
       this.fetchArticles();
     }
   }
-  
+
   render() {
     return (
-      <section className="w-full h-full p-10 flex flex-col flex-wrap md:flex-row justify-center itmes-center">
-        {this.state.loading ? <Spinner /> : null}
-        {this.state.isRedirect ? (
-          <Redirect
-            to={{
-              pathname: `/notes/${this.state.redirectId}`,
-              state: { articleId: this.state.redirectId, article: this.getArticle() },
-            }}
-          />
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        {this.state.error ? (
+          <Backdrop>
+            <ErrorFallback error={{ message: this.state.errorMessage }} />
+          </Backdrop>
         ) : null}
-        {this.props.articles.length > 0 ? null : <NewArticleIcon />}
-        {this.renderArticles()}
-      </section>
+        <section className="w-full h-full p-10 flex flex-col flex-wrap md:flex-row justify-center itmes-center">
+          {this.state.loading ? <Spinner /> : null}
+          {this.state.isRedirect ? (
+            <Redirect
+              to={{
+                pathname: `/notes/${this.state.redirectId}`,
+                state: {
+                  articleId: this.state.redirectId,
+                  article: this.getArticle(),
+                },
+              }}
+            />
+          ) : null}
+          {this.props.articles.length > 0 ? null : <NewArticleIcon />}
+          {this.renderArticles()}
+        </section>
+      </ErrorBoundary>
     );
   }
 }
