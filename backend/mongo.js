@@ -23,7 +23,7 @@ const upsertUser = async (user) => {
           $set: {
             email: user.email,
             "auth.type": user.oauthType,
-            "auth.sub": user.sub ? user.sub : null
+            "auth.sub": user.sub ? user.sub : null,
           },
         },
         { upsert: true },
@@ -33,7 +33,7 @@ const upsertUser = async (user) => {
     return {
       _id: updated.value._id.toString(),
       email: updated.value.email,
-      oauth: updated.value.auth.type
+      oauth: updated.value.auth.type,
     };
   } catch (error) {
     console.error(error);
@@ -56,7 +56,7 @@ const upsertArticle = async (data) => {
             due: data.due,
             title: data.title,
             image: data.image,
-            notes: []
+            notes: [],
           },
         },
       },
@@ -84,7 +84,7 @@ const fetchArticles = async (_id) => {
 
 const deleteArticle = async (data) => {
   try {
-     const article = await mongoClient
+    const article = await mongoClient
       .db("test")
       .collection("user")
       .findOneAndUpdate(
@@ -115,7 +115,7 @@ const upsertArchive = async (data) => {
         },
         {
           $push: {
-            archived: {...data.article, _id: ObjectID(data.article._id)}
+            archived: { ...data.article, _id: ObjectID(data.article._id) },
           },
         },
         { upsert: false },
@@ -163,9 +163,9 @@ const upsertNote = async (data) => {
       .collection("user")
       .findOneAndUpdate(
         { _id: ObjectID(data._id), "articles._id": ObjectID(data.articleId) },
-        { $set: { "articles.$.tags": data.tags, "articles.$.due": data.due } },
         {
-          $addToSet: {
+          $set: { "articles.$.tags": data.tags, "articles.$.due": data.due },
+          $push: {
             "articles.$.notes": {
               _id: ObjectID(),
               content: data.note,
@@ -175,9 +175,15 @@ const upsertNote = async (data) => {
         { upsert: true }
       );
 
-    const doc = await fetchNotes({ _id: data._id, articleId: data.articleId });
-    const notes = doc[0].articles[0].notes;
-    return notes.pop(); // the last element of notes
+    const doc = await fetchNotes({
+      _id: data._id,
+      articleId: data.articleId,
+      fieldName: data.fieldName,
+    });
+    const notes = !doc[0].articles[0].notes
+      ? null
+      : doc[0].articles[0].notes.pop(); // // the last element of notes
+    return notes;
   } catch (error) {
     console.error(error);
   }
@@ -185,18 +191,18 @@ const upsertNote = async (data) => {
 
 const fetchNotes = async (data) => {
   try {
-    const notes = await mongoClient
+    const doc = await mongoClient
       .db("test")
       .collection("user")
       .aggregate([
         { $match: { _id: ObjectID(data._id) } },
         {
           $project: {
-            articles: {
+            [data.fieldName]: {
               $filter: {
-                input: "$articles",
-                as: "article",
-                cond: { $eq: ["$$article._id", ObjectID(data.articleId)] },
+                input: `$${data.fieldName}`,
+                as: "item",
+                cond: { $eq: ["$$item._id", ObjectID(data.articleId)] },
               },
             },
           },
@@ -204,15 +210,12 @@ const fetchNotes = async (data) => {
         {
           $project: {
             _id: 0,
-            "articles.title": 1,
-            "articles.url": 1,
-            "articles.tags": 1,
-            "articles.notes": 1,
+            [data.fieldName]: 1,
           },
         },
       ])
       .toArray();
-    return notes;
+    return doc[0][data.fieldName][0].notes;
   } catch (error) {
     console.error(error);
   }
@@ -238,17 +241,15 @@ const deleteNote = async (data) => {
 
 const fetchArticlesByKeyword = async (data) => {
   try {
+    const condition = data.fieldName + ".title"; // "archived.title" or "articles.title"
     const result = await mongoClient
       .db("test")
       .collection("user")
       .aggregate(
         { $match: { _id: ObjectID(data._id) } },
-        { $unwind: "$articles" },
-        { $match: { "articles.title": { $regex: data.keyword, $options: 'i' } } },
-        { $project: { _id: 0, "articles": 1 } },
-        { $project: { "articles.notes": 0 }},
-        { $project: { "articles.notes": 0 }}
-
+        { $unwind: `$${[data.fieldName]}` },
+        { $match: { [condition]: { $regex: data.keyword, $options: "i" } } },
+        { $project: { _id: 0, [data.fieldName]: 1 } }
       )
       .toArray();
     return result;
@@ -269,5 +270,5 @@ module.exports = {
   upsertNote,
   fetchNotes,
   deleteNote,
-  fetchArticlesByKeyword
+  fetchArticlesByKeyword,
 };

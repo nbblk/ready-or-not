@@ -3,7 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 
 const cors = require("cors");
 const db = require("./mongo");
@@ -17,10 +17,10 @@ const URI = process.env.MONGO_DB_URI;
 const app = express();
 const store = new MongoDBStore({
   uri: URI,
-  collection: 'mySessions'
+  collection: "mySessions",
 });
 
-store.on('error', (error) => {
+store.on("error", (error) => {
   console.error(error);
 });
 
@@ -29,27 +29,27 @@ const corsOption = {
   origin: true,
 };
 const sessOption = {
-  genid: function(req) {
-    return uuidv4() // use UUIDs for session IDs
+  genid: function (req) {
+    return uuidv4(); // use UUIDs for session IDs
   },
-  name: 'session',
-  secret: 'thisissecret',
+  name: "session",
+  secret: "thisissecret",
   resave: true,
   saveUninitialized: true,
   cookie: {
-    path: '/',
-    domain: 'fortest.com',
+    path: "/",
+    domain: "fortest.com",
     httpOnly: true,
     secure: false,
     maxAge: 36000,
-//    sameSite: 'false'
+    //    sameSite: 'false'
   },
-  store: store
+  store: store,
 };
 
-if (app.get('env') === 'production') {
-  app.set('trust proxy', 1) // trust first proxy
-  sessOption.cookie.secure = true // serve secure cookies
+if (app.get("env") === "production") {
+  app.set("trust proxy", 1); // trust first proxy
+  sessOption.cookie.secure = true; // serve secure cookies
 }
 
 app.use(cors(corsOption));
@@ -90,7 +90,7 @@ app.post("/api/v1/auth", jsonParser, async (req, res) => {
     if (!req.session.id) {
       req.session.regenerate((err) => {
         console.error(err);
-        throw new Error('failed to renegerate session');
+        throw new Error("failed to renegerate session");
       });
     }
     res.json(user);
@@ -180,6 +180,7 @@ app.post("/api/v1/notes/new", jsonParser, authorize, async (req, res) => {
       ...req.body.note,
       articleId: req.body.note._id,
       _id: req.query.uid,
+      fieldName: JSON.parse(req.query.archived) ? "archived" : "articles",
     });
     res.json(response);
     res.status(201);
@@ -193,6 +194,7 @@ app.get("/api/v1/notes", jsonParser, authorize, async (req, res) => {
     const response = await db.fetchNotes({
       _id: req.query.uid,
       articleId: req.query.articleId,
+      fieldName: JSON.parse(req.query.archived) ? "archived" : "articles",
     });
     res.json(response);
     res.status(200);
@@ -221,6 +223,7 @@ app.get("/api/v1/search", jsonParser, authorize, async (req, res) => {
     const result = await db.fetchArticlesByKeyword({
       _id: req.query.uid,
       keyword: req.query.keyword,
+      fieldName: JSON.parse(req.query.archived) ? "archived" : "articles",
     });
     res.status(200);
     res.json(result);
