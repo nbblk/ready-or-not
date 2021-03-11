@@ -21,6 +21,7 @@ class NoteContainer extends Component {
   };
 
   fetchNotes() {
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     const user = JSON.parse(sessionStorage.getItem("user"));
     const articleId = this.props.location.state.articleId;
     fetchData(
@@ -62,6 +63,7 @@ class NoteContainer extends Component {
   }
 
   handleDelete(_id) {
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     const user = JSON.parse(sessionStorage.getItem("user"));
     const articleId = this.props.location.state.article[0]._id;
     fetchData(
@@ -142,6 +144,7 @@ class NoteContainer extends Component {
   };
 
   handleSubmit = (event) => {
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     event.preventDefault();
     const user = JSON.parse(sessionStorage.getItem("user"));
     fetchData(`${API_SERVER_URI}/notes/new?uid=${user._id}&archived=${this.state.isArchived}`, {
@@ -170,6 +173,7 @@ class NoteContainer extends Component {
   };
 
   handleExport = (fileType, articleId) => {
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     const user = JSON.parse(sessionStorage.getItem("user"));
     this.setState({ loading: true });
     fetchData(

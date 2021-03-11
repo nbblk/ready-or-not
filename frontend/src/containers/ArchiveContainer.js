@@ -70,6 +70,7 @@ class ArchiveContainer extends Component {
   };
 
   handleDelete(_id) {
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     const user = JSON.parse(sessionStorage.getItem("user"));
     fetchData(`${API_SERVER_URI}/archive?uid=${user._id}`, {
       method: "DELETE",
@@ -161,15 +162,7 @@ class ArchiveContainer extends Component {
   }
 
   componentDidMount() {
-    // const result = this.props.result;
-    // if (result && result.length > 0) {
-    //   this.setState({
-    //     ...this.state,
-    //     result: this.props.result,
-    //   });
-    // } else {
     this.fetchArchived();
-    //    }
   }
 }
 

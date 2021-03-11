@@ -21,6 +21,7 @@ class ArticleContainer extends Component {
   };
 
   fetchArticles() {
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     const isSearch = this.props.isSearch;
     if (isSearch) {
       this.setState({ ...this.state, result: this.props.result });
@@ -73,6 +74,7 @@ class ArticleContainer extends Component {
   }
 
   handleArchive(article) {
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     const user = JSON.parse(sessionStorage.getItem("user"));
     this.setState({ loading: true });
     fetchData(`${API_SERVER_URI}/archive?uid=${user._id}`, {
@@ -100,6 +102,7 @@ class ArticleContainer extends Component {
   };
 
   handleDelete(_id) {
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     const user = JSON.parse(sessionStorage.getItem("user"));
     this.setState({ loading: true });
     fetchData(`${API_SERVER_URI}/articles?uid=${user._id}`, {
@@ -193,15 +196,7 @@ class ArticleContainer extends Component {
   }
 
   componentDidMount() {
-    // const result = this.props.result;
-    // if (result && result.length > 0) {
-    //   this.setState({
-    //     ...this.state,
-    //     result: this.props.result,
-    //   });
-    //} else {
-      this.fetchArticles();
-    //}
+    this.fetchArticles();
   }
 }
 

@@ -11,8 +11,6 @@ import fetchData from "../../modules/httpRequest";
 import Spinner from "../shared/spinner/Spinner";
 
 const NewArticleModal = (props) => {
-  const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
-
   const history = useHistory();
   const handleError = useErrorHandler();
   const [article, setArticle] = useState({
@@ -24,6 +22,7 @@ const NewArticleModal = (props) => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (event) => {
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     event.preventDefault();
     const user = JSON.parse(sessionStorage.getItem("user"));
     setLoading(true);

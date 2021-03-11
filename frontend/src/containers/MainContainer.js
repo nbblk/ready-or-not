@@ -20,6 +20,7 @@ class Main extends Component {
   };
 
   fetchSearchResult() {
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     const fetchFrom = this.props.content;
     const fieldName = fetchFrom === "archive" ? "archived" : "articles";
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -99,23 +100,6 @@ class Main extends Component {
       default:
         break;
     }
-    // if (content === "archive") {
-    //   el = (
-    //     <ArchiveContainer
-    //       result={this.state.result}
-    //       isSearch={this.state.isSearch}
-    //     />
-    //   );
-    // }
-
-    // if (content === "article") {
-    //   el = (
-    //     <ArticleContainer
-    //       result={this.state.result}
-    //       isSearch={this.state.isSearch}
-    //     />
-    //   );
-    //}
 
     return (
       <ErrorBoundary FallbackComponent={ErrorFallback}>
