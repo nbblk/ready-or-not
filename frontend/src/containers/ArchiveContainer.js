@@ -26,7 +26,7 @@ class ArchiveContainer extends Component {
     } else {
       const user = JSON.parse(sessionStorage.getItem("user"));
       this.setState({ ...this.state, result: null, loading: true });
-      await fetchData(`http://localhost:8080/api/v1/archive?uid=${user._id}`)
+      await fetchData(`${API_SERVER_URI}/archive?uid=${user._id}`)
         .then(async (response) => {
           this.setState({ loading: false });
           const list = await response.json();
@@ -71,7 +71,7 @@ class ArchiveContainer extends Component {
 
   handleDelete(_id) {
     const user = JSON.parse(sessionStorage.getItem("user"));
-    fetchData(`http://localhost:8080/api/v1/archive?uid=${user._id}`, {
+    fetchData(`${API_SERVER_URI}/archive?uid=${user._id}`, {
       method: "DELETE",
       body: JSON.stringify({ _id: _id }),
       mode: "cors",

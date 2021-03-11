@@ -24,7 +24,7 @@ class NoteContainer extends Component {
     const user = JSON.parse(sessionStorage.getItem("user"));
     const articleId = this.props.location.state.articleId;
     fetchData(
-      `http://localhost:8080/api/v1/notes?uid=${user._id}&articleId=${articleId}&archived=${this.state.isArchived}`
+      `${API_SERVER_URI}/notes?uid=${user._id}&articleId=${articleId}&archived=${this.state.isArchived}`
     )
       .then(async (response) => {
         const list = await response.json();
@@ -65,7 +65,7 @@ class NoteContainer extends Component {
     const user = JSON.parse(sessionStorage.getItem("user"));
     const articleId = this.props.location.state.article[0]._id;
     fetchData(
-      `http://localhost:8080/api/v1/notes?uid=${user._id}&articleId=${articleId}`,
+      `${API_SERVER_URI}/notes?uid=${user._id}&articleId=${articleId}`,
       {
         method: "DELETE",
         body: JSON.stringify({ noteId: _id }),
@@ -144,7 +144,7 @@ class NoteContainer extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
     const user = JSON.parse(sessionStorage.getItem("user"));
-    fetchData(`http://localhost:8080/api/v1/notes/new?uid=${user._id}&archived=${this.state.isArchived}`, {
+    fetchData(`${API_SERVER_URI}/notes/new?uid=${user._id}&archived=${this.state.isArchived}`, {
       method: "POST",
       mode: "cors",
       headers: {
@@ -173,7 +173,7 @@ class NoteContainer extends Component {
     const user = JSON.parse(sessionStorage.getItem("user"));
     this.setState({ loading: true });
     fetchData(
-      `http://localhost:8080/api/v1/export?uid=${user._id}&articleId=${articleId}&type=${fileType}`
+      `${API_SERVER_URI}/export?uid=${user._id}&articleId=${articleId}&type=${fileType}`
     )
       .then((response) => {
         this.setState({ loading: false });

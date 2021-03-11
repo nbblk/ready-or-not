@@ -27,7 +27,7 @@ class ArticleContainer extends Component {
     } else {      
       const user = JSON.parse(sessionStorage.getItem("user"));
       this.setState({ ...this.state, result: null, loading: true });
-      fetchData(`http://localhost:8080/api/v1/articles?uid=${user._id}`)
+      fetchData(`${API_SERVER_URI}/articles?uid=${user._id}`)
         .then(async (response) => {
           const list = await response.json();
           if (list) {
@@ -75,7 +75,7 @@ class ArticleContainer extends Component {
   handleArchive(article) {
     const user = JSON.parse(sessionStorage.getItem("user"));
     this.setState({ loading: true });
-    fetchData(`http://localhost:8080/api/v1/archive?uid=${user._id}`, {
+    fetchData(`${API_SERVER_URI}/archive?uid=${user._id}`, {
       method: "PUT",
       body: JSON.stringify(article),
       mode: "cors",
@@ -102,7 +102,7 @@ class ArticleContainer extends Component {
   handleDelete(_id) {
     const user = JSON.parse(sessionStorage.getItem("user"));
     this.setState({ loading: true });
-    fetchData(`http://localhost:8080/api/v1/articles?uid=${user._id}`, {
+    fetchData(`${API_SERVER_URI}/articles?uid=${user._id}`, {
       method: "DELETE",
       body: JSON.stringify({ _id: _id }),
       mode: "cors",

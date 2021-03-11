@@ -25,7 +25,7 @@ class Main extends Component {
     const user = JSON.parse(sessionStorage.getItem("user"));
 
     fetchData(
-      `http://localhost:8080/api/v1/search?uid=${user._id}&keyword=${
+      `${API_SERVER_URI}/search?uid=${user._id}&keyword=${
         this.state.keyword
       }&archived=${fetchFrom === "archive"}`
     )

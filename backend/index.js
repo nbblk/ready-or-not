@@ -11,7 +11,7 @@ const auth = require("./auth");
 const scrapPage = require("./puppeteer");
 const convertNotes = require("./exportFile");
 
-const PORT = process.env.SERVER_PORT;
+const PORT = (process.env.PORT || 8080);
 const URI = process.env.MONGO_DB_URI;
 
 const app = express();
