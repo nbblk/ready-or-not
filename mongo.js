@@ -175,15 +175,12 @@ const upsertNote = async (data) => {
         { upsert: true }
       );
 
-    const doc = await fetchNotes({
+    const notes = await fetchNotes({
       _id: data._id,
       articleId: data.articleId,
       fieldName: data.fieldName,
     });
-    const notes = !doc[0].articles[0].notes
-      ? null
-      : doc[0].articles[0].notes.pop(); // // the last element of notes
-    return notes;
+    return notes.pop();
   } catch (error) {
     console.error(error);
   }
@@ -215,7 +212,8 @@ const fetchNotes = async (data) => {
         },
       ])
       .toArray();
-    return doc[0][data.fieldName][0].notes;
+    const notes = doc[0][data.fieldName].length > 0 ? doc[0][data.fieldName][0].notes : null; 
+    return notes;
   } catch (error) {
     console.error(error);
   }
