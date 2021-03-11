@@ -20,7 +20,8 @@ class ArchiveContainer extends Component {
   };
 
   async fetchArchived() {
-    const isSearch = this.props.isSearch;// || this.props.location.state.isSearch;
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
+    const isSearch = this.props.isSearch;
     if (isSearch) {
       this.setState({ ...this.state, result: this.props.result });
     } else {
