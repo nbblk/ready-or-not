@@ -10,8 +10,6 @@ import { download } from "../modules/exports";
 import ErrorFallback from "../components/modals/ErrorFallback";
 import Backdrop from "../components/shared/Backdrop";
 
-const user = JSON.parse(sessionStorage.getItem("user"));
-
 class NoteContainer extends Component {
   state = {
     article: null,
@@ -19,21 +17,21 @@ class NoteContainer extends Component {
     loading: false,
     error: false,
     errorMessage: "",
+    isArchived: false,
   };
 
   fetchNotes() {
+    const user = JSON.parse(sessionStorage.getItem("user"));
     const articleId = this.props.location.state.articleId;
     fetchData(
-      `http://localhost:8080/api/v1/notes?uid=${user._id}&articleId=${articleId}`
+      `http://localhost:8080/api/v1/notes?uid=${user._id}&articleId=${articleId}&archived=${this.state.isArchived}`
     )
       .then(async (response) => {
         const list = await response.json();
-        if (list.length > 0)
-          this.setState({ ...this.state, notes: list[0].articles[0].notes });
+        this.setState({ notes: list });
       })
       .catch((error) => {
         this.setState({
-          ...this.state,
           error: true,
           errorMessage: error.message,
         });
@@ -64,6 +62,7 @@ class NoteContainer extends Component {
   }
 
   handleDelete(_id) {
+    const user = JSON.parse(sessionStorage.getItem("user"));
     const articleId = this.props.location.state.article[0]._id;
     fetchData(
       `http://localhost:8080/api/v1/notes?uid=${user._id}&articleId=${articleId}`,
@@ -81,7 +80,6 @@ class NoteContainer extends Component {
       })
       .catch((error) => {
         this.setState({
-          ...this.state,
           error: true,
           errorMessage: error.message,
         });
@@ -108,13 +106,12 @@ class NoteContainer extends Component {
   updateTag = (newValue) => {
     const tags = [...this.state.article.tags];
     const isDuplicate =
-      tags.length > 0 ? this.checkDuplicateTag(newValue) : true;
+      tags.length > 0 ? this.checkDuplicateTag(newValue) : false;
     if (isDuplicate || tags.length > 10) {
       return;
     } else {
       tags.push(newValue);
       this.setState({
-        ...this.state.notes,
         article: {
           ...this.state.article,
           tag: "",
@@ -140,7 +137,6 @@ class NoteContainer extends Component {
       tags.splice(index);
     }
     this.setState({
-      ...this.state.notes,
       article: { ...this.state.article, tags: tags },
     });
   };
@@ -148,7 +144,7 @@ class NoteContainer extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
     const user = JSON.parse(sessionStorage.getItem("user"));
-    fetchData(`http://localhost:8080/api/v1/notes/new?uid=${user._id}`, {
+    fetchData(`http://localhost:8080/api/v1/notes/new?uid=${user._id}&archived=${this.state.isArchived}`, {
       method: "POST",
       mode: "cors",
       headers: {
@@ -161,14 +157,12 @@ class NoteContainer extends Component {
         const arr = [...this.state.notes];
         arr.push(data);
         this.setState({
-          ...this.state,
           article: { ...this.state.article, note: "" }, // clear textarea
           notes: arr,
         });
       })
       .catch((error) => {
         this.setState({
-          ...this.state,
           error: true,
           errorMessage: error.message,
         });
@@ -177,18 +171,17 @@ class NoteContainer extends Component {
 
   handleExport = (fileType, articleId) => {
     const user = JSON.parse(sessionStorage.getItem("user"));
-    this.setState({ ...this.state, loading: true });
+    this.setState({ loading: true });
     fetchData(
       `http://localhost:8080/api/v1/export?uid=${user._id}&articleId=${articleId}&type=${fileType}`
     )
       .then((response) => {
-        this.setState({ ...this.state, loading: false });
+        this.setState({ loading: false });
         return response.text();
       })
       .then((content) => download(content, `${articleId}.${fileType}`))
       .catch((err) => {
         this.setState({
-          ...this.state,
           loading: false,
           error: true,
           errorMessage: err.message,
@@ -199,8 +192,8 @@ class NoteContainer extends Component {
   componentDidMount() {
     this.fetchNotes();
     this.setState({
-      ...this.state.notes,
       article: this.props.location.state.article[0],
+      isArchived: this.props.location.state.isArchived,
     });
   }
 
@@ -213,19 +206,21 @@ class NoteContainer extends Component {
           </Backdrop>
         ) : null}
         <Router>
-          <Route
-            path="/export"
-            render={(props) => (
-              <ExportModal
-                {...props}
-                export={(fileType, articleId) =>
-                  this.handleExport(fileType, articleId)
-                }
-                loading={this.state.loading}
-              />
-            )}
-          />
-          <section className="w-full h-full bg-beige-yellowish flex flex-col md:flex-row">
+          {this.state.notes && this.state.notes.length > 0 ? (
+            <Route
+              path="/export"
+              render={(props) => (
+                <ExportModal
+                  {...props}
+                  export={(fileType, articleId) =>
+                    this.handleExport(fileType, articleId)
+                  }
+                  loading={this.state.loading}
+                />
+              )}
+            />
+          ) : null}
+          <section className="w-full h-full py-12 flex flex-col md:flex-row">
             <NewNote
               article={
                 this.state.article || this.props.location.state.article[0]

@@ -10,27 +10,35 @@ import Backdrop from "../components/shared/Backdrop";
 
 class Main extends Component {
   state = {
-    keyword: null,
+    keyword: "",
     result: [],
     submit: false,
     loading: false,
     error: false,
     errorMessage: "",
+    isSearch: false,
   };
 
   fetchSearchResult() {
+    const fetchFrom = this.props.content;
+    const fieldName = fetchFrom === "archive" ? "archived" : "articles";
     const user = JSON.parse(sessionStorage.getItem("user"));
+
     fetchData(
-      `http://localhost:8080/api/v1/search?uid=${user._id}&keyword=${this.state.keyword}`
+      `http://localhost:8080/api/v1/search?uid=${user._id}&keyword=${
+        this.state.keyword
+      }&archived=${fetchFrom === "archive"}`
     )
       .then(async (response) => {
         const jsonData = await response.json();
         const results = [];
         for (let i = 0; i < jsonData.length; i++) {
-          results.push(jsonData[i].articles);
+          results.push(jsonData[i][fieldName]);
         }
+
         this.setState({
           ...this.state,
+          keyword: "",
           result: results,
           submit: false,
           loading: false,
@@ -40,11 +48,27 @@ class Main extends Component {
         this.setState({
           ...this.state,
           loading: false,
+          submit: false,
           error: true,
           errorMessage: error.message,
         });
       });
   }
+
+  handleInputChange = (event) => {
+    this.setState({ keyword: event.target.value.trim() });
+  };
+
+  handleEnter = (event) => {
+    if (event.keycode === 13 || event.key === "Enter") {
+      this.setState({
+        ...this.state,
+        submit: true,
+        loading: true,
+        isSearch: true,
+      });
+    }
+  };
 
   componentDidUpdate() {
     if (this.state.submit) {
@@ -52,26 +76,46 @@ class Main extends Component {
     }
   }
 
-  handleInputChange = (event) => {
-    this.setState({ ...this.state, keyword: event.target.value.trim() });
-  };
-
-  handleEnter = (event) => {
-    if (event.keycode === 13 || event.key === "Enter") {
-      this.setState({ ...this.state, submit: true, loading: true });
-    }
-  };
-
   render() {
     const content = this.props.content;
     let el = null;
-    if (content === "archive") {
-      el = <ArchiveContainer />;
+    switch (content) {
+      case "article":
+        el = (
+          <ArticleContainer
+            result={this.state.result}
+            isSearch={this.state.isSearch}
+          />
+        );
+        break;
+      case "archive":
+        el = (
+          <ArchiveContainer
+            result={this.state.result}
+            isSearch={this.state.isSearch}
+          />
+        );
+        break;
+      default:
+        break;
     }
+    // if (content === "archive") {
+    //   el = (
+    //     <ArchiveContainer
+    //       result={this.state.result}
+    //       isSearch={this.state.isSearch}
+    //     />
+    //   );
+    // }
 
-    if (content === "article") {
-      el = <ArticleContainer articles={this.state.result} />;
-    }
+    // if (content === "article") {
+    //   el = (
+    //     <ArticleContainer
+    //       result={this.state.result}
+    //       isSearch={this.state.isSearch}
+    //     />
+    //   );
+    //}
 
     return (
       <ErrorBoundary FallbackComponent={ErrorFallback}>
@@ -82,6 +126,7 @@ class Main extends Component {
         ) : null}
         <main className="w-full h-full py-20 md:py-40 bg-beige-yellowish flex flex-col justify-center items-center">
           <Searchbar
+            value={this.state.keyword}
             change={(event) => this.handleInputChange(event)}
             keydown={(event) => this.handleEnter(event)}
           />

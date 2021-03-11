@@ -13,7 +13,7 @@ const OldNotes = (props) => {
         <small className="underline hover:text-purple">Export...</small>
       </Link>
       <ul className="w-full h-full bg-transparent list-none">
-        {props.notes.map((note) => {
+        {props.notes && props.notes.length > 0 ? props.notes.map((note) => {
           return (
             <li
               key={note._id}
@@ -23,7 +23,7 @@ const OldNotes = (props) => {
               <p className="p-3">{note.content}</p>
             </li>
           );
-        })}
+        }) : null }
       </ul>
     </section>
   );

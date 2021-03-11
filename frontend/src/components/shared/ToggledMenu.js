@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 
 const toggledMenu = (props) => {
   return (
@@ -12,11 +11,13 @@ const toggledMenu = (props) => {
     >
       {["main", "archive", "about"].map((menu, index) => {
         return (
-          <Link key={index} to={`/${menu}`}>
-            <li className="m-5 hover:text-purple uppercase text-lg">
-              {menu}
-            </li>
-          </Link>
+          <li
+            key={index}
+            className="m-5 hover:text-purple uppercase text-lg"
+            onClick={() => window.location.replace(`/${menu}`)}
+          >
+            {menu}
+          </li>
         );
       })}
     </ul>

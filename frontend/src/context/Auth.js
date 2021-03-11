@@ -21,7 +21,7 @@ function useProvideAuth() {
     if (sessionStorage.getItem("user")) {
       setLoggedIn(true);
     }
-  }, []);
+  }, [loggedIn]);
 
   const loginSuccess = async (response, oauthType) => {
     await authenticate({ oauthType: oauthType, token: response });
@@ -39,7 +39,7 @@ function useProvideAuth() {
       .then(async (response) => {
         const jsonData = await response.json();
         sessionStorage.setItem("user", JSON.stringify(jsonData));
-        setLoggedIn(true);
+        await setLoggedIn(true);
       })
       .catch((error) => {
         setError(error.statusText);
@@ -61,12 +61,11 @@ function useProvideAuth() {
 }
 
 export function PrivateRoute({ children, ...rest }) {
-  const auth = useAuth();
   return (
     <Route
       {...rest}
       render={({ location }) =>
-        auth.loggedIn ? (
+        sessionStorage.getItem("user") ? (
           children
         ) : (
           <Redirect

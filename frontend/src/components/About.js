@@ -3,7 +3,7 @@ import React from "react";
 const about = () => {
   return (
     <section className="w-full h-full py-40 px-20 md:px-40 flex flex-row justify-center items-center bg-transparent">
-      <p className="text-left font-4xl md:font-5xl font-poppins">
+      <article className="text-left font-4xl md:font-5xl font-poppins">
         <p>Hello folks. I'm Blake.</p>
         <br />
         <p>
@@ -35,7 +35,7 @@ const about = () => {
           </a>
           &nbsp; are welcome😁
         </p>
-      </p>
+      </article>
     </section>
   );
 };

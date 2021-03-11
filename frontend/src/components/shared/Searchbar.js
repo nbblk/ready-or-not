@@ -9,6 +9,7 @@ const searchbar = (props) => {
         placeholder="Enter something..."
         onChange={props.change}
         onKeyDown={props.keydown}
+        value={props.value}
       />
     </div>
   );

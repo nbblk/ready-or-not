@@ -18,7 +18,7 @@ const Article = (props) => {
           alt="img"
         />
       </div>
-      {props.tags.length > 0 ? <TagItem tags={props.tags} /> : null}
+      {props.tags && props.tags.length > 0 ? <TagItem tags={props.tags} /> : null}
       <a
         href={props.url}
         target="_blank"

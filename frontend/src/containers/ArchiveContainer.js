@@ -1,32 +1,44 @@
 import React, { Component } from "react";
+import { Redirect } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
+
 import Article from "../components/articles/Article";
 import fetchData from "../modules/httpRequest";
+import Spinner from "../components/shared/spinner/Spinner";
 import Backdrop from "../components/shared/Backdrop";
 import ErrorFallback from "../components/modals/ErrorFallback";
 
-const user = JSON.parse(sessionStorage.getItem("user"));
-
 class ArchiveContainer extends Component {
   state = {
+    result: [],
     articles: [],
+    isRedirect: false,
+    redirectId: null,
+    loading: false,
     error: false,
     errorMessage: "",
   };
 
-  fetchArchived() {
-    fetchData(`http://localhost:8080/api/v1/archive?uid=${user._id}`)
-      .then(async (response) => {
-        const list = await response.json();
-        if (list) this.setState({ articles: list[0].archived });
-      })
-      .catch((error) => {
-        this.setState({
-          ...this.state,
-          error: true,
-          errorMessage: error.message,
+  async fetchArchived() {
+    const isSearch = this.props.isSearch;// || this.props.location.state.isSearch;
+    if (isSearch) {
+      this.setState({ ...this.state, result: this.props.result });
+    } else {
+      const user = JSON.parse(sessionStorage.getItem("user"));
+      this.setState({ ...this.state, result: null, loading: true });
+      await fetchData(`http://localhost:8080/api/v1/archive?uid=${user._id}`)
+        .then(async (response) => {
+          this.setState({ loading: false });
+          const list = await response.json();
+          if (list) this.setState({ articles: list[0].archived });
+        })
+        .catch((error) => {
+          this.setState({
+            error: true,
+            errorMessage: error.message,
+          });
         });
-      });
+    }
   }
 
   findArticle(_id) {
@@ -53,11 +65,12 @@ class ArchiveContainer extends Component {
     }
   }
 
-  handleAddNote = () => {
-    this.props.history.push("/notes");
+  handleAddNote = (_id) => {
+    this.setState({ ...this.state, isRedirect: true, redirectId: _id });
   };
 
-  async handleDelete(_id) {
+  handleDelete(_id) {
+    const user = JSON.parse(sessionStorage.getItem("user"));
     fetchData(`http://localhost:8080/api/v1/archive?uid=${user._id}`, {
       method: "DELETE",
       body: JSON.stringify({ _id: _id }),
@@ -78,8 +91,45 @@ class ArchiveContainer extends Component {
       });
   }
 
-  componentDidMount() {
-    this.fetchArchived();
+  getArticle = () => {
+    const found = this.state.articles.filter(
+      (article) => article._id === this.state.redirectId
+    );
+    return found;
+  };
+
+  getArticles(articles) {
+    return articles.map((article) => {
+      return (
+        <Article
+          key={article._id}
+          _id={article._id}
+          url={article.url}
+          due={article.due}
+          tags={article.tags}
+          title={article.title}
+          image={article.image}
+          addNote={() => this.handleAddNote(article._id)}
+          delete={() => this.handleDelete(article._id)}
+          isArchived={true}
+        />
+      );
+    });
+  }
+
+  renderArticles() {
+    const result = this.props.result;
+    const articles = this.state.articles;
+    let articlesToRender = null;
+
+    if (result && result.length > 0) {
+      articlesToRender = this.getArticles(result);
+    } else {
+      if (articles && articles.length > 0) {
+        articlesToRender = this.getArticles(articles);
+      }
+    }
+    return articlesToRender;
   }
 
   render() {
@@ -91,27 +141,35 @@ class ArchiveContainer extends Component {
           </Backdrop>
         ) : null}
         <section className="w-full h-full p-10 flex flex-col flex-wrap md:flex-row justify-center itmes-center">
-          {this.state.articles
-            ? this.state.articles.map((article) => {
-                return (
-                  <Article
-                    key={article._id}
-                    _id={article._id}
-                    url={article.url}
-                    due={article.due}
-                    tags={article.tags}
-                    title={article.title}
-                    image={article.image}
-                    addNote={() => this.handleAddNote(article._id)}
-                    delete={() => this.handleDelete(article._id)}
-                    isArchived={true}
-                  />
-                );
-              })
-            : null}
+          {this.state.loading ? <Spinner /> : null}
+          {this.state.isRedirect ? (
+            <Redirect
+              to={{
+                pathname: `/notes/${this.state.redirectId}`,
+                state: {
+                  articleId: this.state.redirectId,
+                  article: this.getArticle(),
+                  isArchived: true,
+                },
+              }}
+            />
+          ) : null}
+          {this.renderArticles()}
         </section>
       </ErrorBoundary>
     );
+  }
+
+  componentDidMount() {
+    // const result = this.props.result;
+    // if (result && result.length > 0) {
+    //   this.setState({
+    //     ...this.state,
+    //     result: this.props.result,
+    //   });
+    // } else {
+    this.fetchArchived();
+    //    }
   }
 }
 

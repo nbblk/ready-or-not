@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Redirect } from "react-router-dom";
+import { Redirect, withRouter } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
 
 import NewArticleIcon from "../components/articles/NewArticle";
@@ -11,38 +11,42 @@ import Backdrop from "../components/shared/Backdrop";
 
 class ArticleContainer extends Component {
   state = {
+    result: [],
     articles: [],
-    isSearchedResult: false,
     isRedirect: false,
     redirectId: null,
     loading: false,
     error: false,
-    errorMessage: ''
+    errorMessage: "",
   };
 
-  async fetchArticles() {
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    this.setState({ ...this.state, loading: true });
-    fetchData(`http://localhost:8080/api/v1/articles?uid=${user._id}`)
-      .then(async (response) => {
-        const list = await response.json();
-        if (list) {
+  fetchArticles() {
+    const isSearch = this.props.isSearch;
+    if (isSearch) {
+      this.setState({ ...this.state, result: this.props.result });
+    } else {      
+      const user = JSON.parse(sessionStorage.getItem("user"));
+      this.setState({ ...this.state, result: null, loading: true });
+      fetchData(`http://localhost:8080/api/v1/articles?uid=${user._id}`)
+        .then(async (response) => {
+          const list = await response.json();
+          if (list) {
+            this.setState({
+              ...this.state,
+              articles: list[0].articles,
+              loading: false,
+            });
+          }
+        })
+        .catch((error) => {
           this.setState({
-            ...this.state,
-            articles: list[0].articles,
-            mode: "list",
             loading: false,
+            error: true,
+            errorMessage: error.message,
           });
-        }
-      })
-      .catch((error) => {
-        this.setState({
-          ...this.state,
-          loading: false,
-          error: true,
-          errorMessage: error.message,
         });
-      });
+  
+    }
   }
 
   findArticle(_id) {
@@ -70,6 +74,7 @@ class ArticleContainer extends Component {
 
   handleArchive(article) {
     const user = JSON.parse(sessionStorage.getItem("user"));
+    this.setState({ loading: true });
     fetchData(`http://localhost:8080/api/v1/archive?uid=${user._id}`, {
       method: "PUT",
       body: JSON.stringify(article),
@@ -83,7 +88,6 @@ class ArticleContainer extends Component {
       })
       .catch((error) => {
         this.setState({
-          ...this.state,
           loading: false,
           error: true,
           errorMessage: error.message,
@@ -97,7 +101,7 @@ class ArticleContainer extends Component {
 
   handleDelete(_id) {
     const user = JSON.parse(sessionStorage.getItem("user"));
-
+    this.setState({ loading: true });
     fetchData(`http://localhost:8080/api/v1/articles?uid=${user._id}`, {
       method: "DELETE",
       body: JSON.stringify({ _id: _id }),
@@ -111,7 +115,6 @@ class ArticleContainer extends Component {
       })
       .catch((error) => {
         this.setState({
-          ...this.state,
           loading: false,
           error: true,
           errorMessage: error.message,
@@ -146,28 +149,18 @@ class ArticleContainer extends Component {
   }
 
   renderArticles() {
-    let articles = null;
+    const result = this.props.result;
+    const articles = this.state.articles;
+    let articlesToRender = null;
 
-    if (this.props.articles.length > 0) {
-      articles = this.getArticles(this.props.articles);
+    if (result && result.length > 0) {
+      articlesToRender = this.getArticles(result);
     } else {
-      if (this.state.articles && this.state.articles.length > 0) {
-        articles = this.getArticles(this.state.articles);
+      if (articles && articles.length > 0) {
+        articlesToRender = this.getArticles(articles);
       }
     }
-    return articles;
-  }
-
-  componentDidMount() {
-    if (this.props.articles.length > 0) {
-      this.setState({
-        articles: this.props.articles,
-        isSearchedResult: true,
-        loading: this.props.loading,
-      });
-    } else {
-      this.fetchArticles();
-    }
+    return articlesToRender;
   }
 
   render() {
@@ -187,16 +180,29 @@ class ArticleContainer extends Component {
                 state: {
                   articleId: this.state.redirectId,
                   article: this.getArticle(),
+                  isArchived: false,
                 },
               }}
             />
           ) : null}
-          {this.props.articles.length > 0 ? null : <NewArticleIcon />}
+          <NewArticleIcon />
           {this.renderArticles()}
         </section>
       </ErrorBoundary>
     );
   }
+
+  componentDidMount() {
+    // const result = this.props.result;
+    // if (result && result.length > 0) {
+    //   this.setState({
+    //     ...this.state,
+    //     result: this.props.result,
+    //   });
+    //} else {
+      this.fetchArticles();
+    //}
+  }
 }
 
-export default ArticleContainer;
+export default withRouter(ArticleContainer);
