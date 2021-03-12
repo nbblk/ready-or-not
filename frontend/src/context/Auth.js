@@ -28,7 +28,8 @@ function useProvideAuth() {
   };
 
   async function authenticate(data) {
-    const uri = `http://localhost:8080/api/v1/auth`;
+    const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
+    const uri = `${API_SERVER_URI}/auth`;
 
     await fetchData(uri, {
       method: "POST",
