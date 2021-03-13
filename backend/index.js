@@ -62,7 +62,7 @@ if (app.get("env") === "production") {
   sessOption.cookie.secure = true; // serve secure cookies
 }
 
-app.use(apiProxy);
+//app.use(apiProxy);
 app.use(morgan("dev")); // logging
 app.use(cors(corsOption));
 app.options("*", cors());
@@ -95,6 +95,10 @@ const authorize = async (req, res, next) => {
     next();
   }
 };
+
+app.get("/", (req, res) => {
+  res.send("server is running !");
+});
 
 app.post("/api/v1/auth", jsonParser, async (req, res) => {
   try {
