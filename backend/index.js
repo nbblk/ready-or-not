@@ -1,5 +1,7 @@
 require("dotenv").config();
 const express = require("express");
+const morgan = require("morgan");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
@@ -13,6 +15,8 @@ const convertNotes = require("./exportFile");
 
 const PORT = (process.env.PORT || 8080);
 const URI = process.env.MONGO_DB_URI;
+const SERVER_DOMAIN = process.env.SERVER_DOMAIN;
+const CLIENT_DOMAIN = process.env.CLIENT_DOMAIN;
 
 const app = express();
 const store = new MongoDBStore({
@@ -24,6 +28,10 @@ store.on("error", (error) => {
   console.error(error);
 });
 
+const proxyOption = {
+  target: SERVER_DOMAIN,
+  changeOrigin: true
+};
 const corsOption = {
   credentials: true,
   origin: true,
@@ -38,8 +46,8 @@ const sessOption = {
   saveUninitialized: true,
   cookie: {
     path: "/",
-    domain: "fortest.com",
-    httpOnly: true,
+    domain: CLIENT_DOMAIN,
+    httpOnly: false,
     secure: false,
     maxAge: 36000,
     //    sameSite: 'false'
@@ -47,11 +55,15 @@ const sessOption = {
   store: store,
 };
 
+const apiProxy = createProxyMiddleware("/api/v1/**", proxyOption);
+
 if (app.get("env") === "production") {
   app.set("trust proxy", 1); // trust first proxy
   sessOption.cookie.secure = true; // serve secure cookies
 }
 
+app.use(apiProxy);
+app.use(morgan("dev")); // logging
 app.use(cors(corsOption));
 app.options("*", cors());
 app.use(session(sessOption));
