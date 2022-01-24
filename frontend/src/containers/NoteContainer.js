@@ -24,17 +24,19 @@ class NoteContainer extends Component {
     const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     const user = JSON.parse(sessionStorage.getItem("user"));
     const articleId = this.props.location.state.articleId;
+    this.setState({ loading: true });
     fetchData(
-      `${API_SERVER_URI}/notes?uid=${user._id}&articleId=${articleId}&archived=${this.state.isArchived}`
+      `${API_SERVER_URI}/notes?uid=${user._id}&articleId=${articleId}&archived=${this.props.location.state.isArchived}`
     )
       .then(async (response) => {
         const list = await response.json();
-        this.setState({ notes: list });
+        this.setState({ loading: false, notes: list });
       })
       .catch((error) => {
         this.setState({
           error: true,
           errorMessage: error.message,
+          loading: false,
         });
       });
   }
@@ -66,8 +68,9 @@ class NoteContainer extends Component {
     const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     const user = JSON.parse(sessionStorage.getItem("user"));
     const articleId = this.props.location.state.article[0]._id;
+    this.setState({ loading: true });
     fetchData(
-      `${API_SERVER_URI}/notes?uid=${user._id}&articleId=${articleId}`,
+      `${API_SERVER_URI}/notes?uid=${user._id}&articleId=${articleId}&archived=${this.props.location.state.isArchived}`,
       {
         method: "DELETE",
         body: JSON.stringify({ noteId: _id }),
@@ -78,12 +81,14 @@ class NoteContainer extends Component {
       }
     )
       .then((response) => {
+        this.setState({ loading: false });
         this.updateNote(_id);
       })
       .catch((error) => {
         this.setState({
           error: true,
           errorMessage: error.message,
+          loading: false
         });
       });
   }
@@ -147,14 +152,18 @@ class NoteContainer extends Component {
     const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     event.preventDefault();
     const user = JSON.parse(sessionStorage.getItem("user"));
-    fetchData(`${API_SERVER_URI}/notes/new?uid=${user._id}&archived=${this.state.isArchived}`, {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ note: this.state.article }),
-    })
+    this.setState({ loading: true });    
+    fetchData(
+      `${API_SERVER_URI}/notes/new?uid=${user._id}&archived=${this.state.isArchived}`,
+      {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ note: this.state.article }),
+      }
+    )
       .then(async (response) => {
         const data = await response.json();
         const arr = [...this.state.notes];
@@ -162,12 +171,14 @@ class NoteContainer extends Component {
         this.setState({
           article: { ...this.state.article, note: "" }, // clear textarea
           notes: arr,
+          loading: false
         });
       })
       .catch((error) => {
         this.setState({
           error: true,
           errorMessage: error.message,
+          loading: false
         });
       });
   };

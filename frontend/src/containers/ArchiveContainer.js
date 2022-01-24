@@ -37,6 +37,7 @@ class ArchiveContainer extends Component {
           this.setState({
             error: true,
             errorMessage: error.message,
+            loading: false,
           });
         });
     }
@@ -73,6 +74,8 @@ class ArchiveContainer extends Component {
   handleDelete(_id) {
     const API_SERVER_URI = process.env.REACT_APP_SERVER_URI;
     const user = JSON.parse(sessionStorage.getItem("user"));
+    this.setState({ loading: true });
+
     fetchData(`${API_SERVER_URI}/archive?uid=${user._id}`, {
       method: "DELETE",
       body: JSON.stringify({ _id: _id }),
@@ -82,11 +85,12 @@ class ArchiveContainer extends Component {
       },
     })
       .then(async (response) => {
+        this.setState({ loading: false });
         await this.updateArticle(_id);
       })
       .catch((error) => {
         this.setState({
-          ...this.state,
+          loading: false,
           error: true,
           errorMessage: error.message,
         });

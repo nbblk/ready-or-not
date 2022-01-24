@@ -86,6 +86,7 @@ class ArticleContainer extends Component {
       },
     })
       .then(async (response) => {
+        this.setState({ loading: false });
         await this.updateArticle(article._id);
       })
       .catch((error) => {
@@ -114,6 +115,7 @@ class ArticleContainer extends Component {
       },
     })
       .then(async (response) => {
+        this.setState({ loading: false });
         await this.updateArticle(_id);
       })
       .catch((error) => {
