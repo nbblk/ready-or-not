@@ -1,41 +1,33 @@
 require("dotenv").config();
 const express = require("express");
+
+const http = require("http");
+const https = require("https");
+const fs = require("fs");
+
 const morgan = require("morgan");
-const { createProxyMiddleware } = require("http-proxy-middleware");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const MongoDBStore = require("connect-mongodb-session")(session);
 const { v4: uuidv4 } = require("uuid");
-
 const cors = require("cors");
+
 const db = require("./mongo");
+
 const auth = require("./auth");
+
 const scrapPage = require("./puppeteer");
 const convertNotes = require("./exportFile");
 
-const PORT = (process.env.PORT || 8080);
-const URI = process.env.MONGO_DB_URI;
+const SCHEME = process.env.SCHEME;
+const PORT = process.env.PORT || 8080;
 const SERVER_DOMAIN = process.env.SERVER_DOMAIN;
-const CLIENT_DOMAIN = process.env.CLIENT_DOMAIN;
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN;
+const NODE_ENV = process.env.NODE_ENV;
 
-const app = express();
-const store = new MongoDBStore({
-  uri: URI,
-  collection: "mySessions",
+db.mongoInit().then(() => {
+  console.log("db connected");
 });
 
-store.on("error", (error) => {
-  console.error(error);
-});
-
-const proxyOption = {
-  target: SERVER_DOMAIN,
-  changeOrigin: true
-};
-const corsOption = {
-  credentials: true,
-  origin: true,
-};
 const sessOption = {
   genid: function (req) {
     return uuidv4(); // use UUIDs for session IDs
@@ -46,35 +38,46 @@ const sessOption = {
   saveUninitialized: true,
   cookie: {
     path: "/",
-    domain: CLIENT_DOMAIN,
+    domain: CLIENT_ORIGIN,
     httpOnly: false,
-    secure: false,
+    secure: true,
     maxAge: 36000,
-    //    sameSite: 'false'
   },
-  store: store,
 };
 
-const apiProxy = createProxyMiddleware("/api/v1/**", proxyOption);
+const app = express();
 
-if (app.get("env") === "production") {
-  app.set("trust proxy", 1); // trust first proxy
-  sessOption.cookie.secure = true; // serve secure cookies
+if (NODE_ENV === "production" || NODE_ENV === "prod") {
+  http.createServer(app).listen(PORT, () => {
+    console.log(`listening on ${SCHEME}://${SERVER_DOMAIN}:${PORT}`);
+  });
+} else if (NODE_ENV === "dev") {
+  https
+    .createServer(
+      {
+        key: fs.readFileSync(process.env.KEY_PATH),
+        cert: fs.readFileSync(process.env.CERT_PATH),
+      },
+      app
+    )
+    .listen(PORT, () => {
+      console.log(`listening on ${SCHEME}://${SERVER_DOMAIN}:${PORT}`);
+    });
+} else {
+  console.error("NODE_ENV not set");
 }
 
-//app.use(apiProxy);
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(morgan("dev")); // logging
-app.use(cors(corsOption));
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
 app.options("*", cors());
 app.use(session(sessOption));
-
-const jsonParser = bodyParser.json();
-
-db.mongoInit();
-
-app.listen(PORT, () =>
-  console.log(`ready-or-not server listening at http://localhost:${PORT}`)
-);
 
 const errorHandler = (err, req, res, next) => {
   if (res.headerSent) {
@@ -100,7 +103,7 @@ app.get("/", (req, res) => {
   res.send("server is running !");
 });
 
-app.post("/api/v1/auth", jsonParser, async (req, res) => {
+app.post("/auth", async (req, res) => {
   try {
     const user = await auth.login(req.body.oauthType, req.body.token);
     if (!req.session.id) {
@@ -120,7 +123,7 @@ app.post("/api/v1/auth", jsonParser, async (req, res) => {
   }
 });
 
-app.get("/api/v1/articles", authorize, async (req, res) => {
+app.get("/articles", authorize, async (req, res) => {
   try {
     const articles = await db.fetchArticles(req.query.uid);
     res.status(200);
@@ -130,7 +133,7 @@ app.get("/api/v1/articles", authorize, async (req, res) => {
   }
 });
 
-app.post("/api/v1/article/new", jsonParser, authorize, async (req, res) => {
+app.post("/article/new", authorize, async (req, res) => {
   try {
     const _id = req.query.uid;
     const { url, tags, due } = req.body.article;
@@ -152,7 +155,7 @@ app.post("/api/v1/article/new", jsonParser, authorize, async (req, res) => {
   }
 });
 
-app.delete("/api/v1/articles", jsonParser, authorize, async (req, res) => {
+app.delete("/articles", authorize, async (req, res) => {
   try {
     await db.deleteArticle({ _id: req.query.uid, articleId: req.body._id });
     res.sendStatus(200);
@@ -161,7 +164,7 @@ app.delete("/api/v1/articles", jsonParser, authorize, async (req, res) => {
   }
 });
 
-app.put("/api/v1/archive", jsonParser, authorize, async (req, res) => {
+app.put("/archive", authorize, async (req, res) => {
   try {
     await db.upsertArchive({ _id: req.query.uid, article: req.body });
     res.sendStatus(201);
@@ -170,7 +173,7 @@ app.put("/api/v1/archive", jsonParser, authorize, async (req, res) => {
   }
 });
 
-app.get("/api/v1/archive", jsonParser, authorize, async (req, res) => {
+app.get("/archive", authorize, async (req, res) => {
   try {
     const response = await db.fetchArchive(req.query.uid);
     res.status(200);
@@ -181,7 +184,7 @@ app.get("/api/v1/archive", jsonParser, authorize, async (req, res) => {
   }
 });
 
-app.delete("/api/v1/archive", jsonParser, authorize, async (req, res) => {
+app.delete("/archive", authorize, async (req, res) => {
   try {
     await db.deleteArchive({ _id: req.query.uid, articleId: req.body._id });
     res.sendStatus(200);
@@ -190,7 +193,7 @@ app.delete("/api/v1/archive", jsonParser, authorize, async (req, res) => {
   }
 });
 
-app.post("/api/v1/notes/new", jsonParser, authorize, async (req, res) => {
+app.post("/notes/new", authorize, async (req, res) => {
   try {
     const response = await db.upsertNote({
       ...req.body.note,
@@ -205,7 +208,7 @@ app.post("/api/v1/notes/new", jsonParser, authorize, async (req, res) => {
   }
 });
 
-app.get("/api/v1/notes", jsonParser, authorize, async (req, res) => {
+app.get("/notes", authorize, async (req, res) => {
   try {
     const response = await db.fetchNotes({
       _id: req.query.uid,
@@ -220,7 +223,7 @@ app.get("/api/v1/notes", jsonParser, authorize, async (req, res) => {
   }
 });
 
-app.delete("/api/v1/notes", jsonParser, authorize, async (req, res) => {
+app.delete("/notes", authorize, async (req, res) => {
   try {
     await db.deleteNote({
       _id: req.query.uid,
@@ -234,7 +237,7 @@ app.delete("/api/v1/notes", jsonParser, authorize, async (req, res) => {
   }
 });
 
-app.get("/api/v1/search", jsonParser, authorize, async (req, res) => {
+app.get("/search", authorize, async (req, res) => {
   try {
     const result = await db.fetchArticlesByKeyword({
       _id: req.query.uid,
@@ -249,7 +252,7 @@ app.get("/api/v1/search", jsonParser, authorize, async (req, res) => {
   }
 });
 
-app.get("/api/v1/export", authorize, async (req, res) => {
+app.get("/export", authorize, async (req, res) => {
   try {
     const data = await convertNotes({
       _id: req.query.uid,
