@@ -26,7 +26,7 @@ const upsertUser = async (user) => {
             "auth.sub": user.sub ? user.sub : null,
           },
         },
-        { returnDocument: "after", upsert: true },
+        { returnDocument: "after", upsert: true }
       );
     return {
       _id: updated.value._id.toString(),
@@ -58,7 +58,7 @@ const upsertArticle = async (data) => {
           },
         },
       },
-      { returnDocument: "after", upsert: true },
+      { returnDocument: "after", upsert: true }
     )
     .catch((err) => console.error(err));
 
@@ -101,6 +101,10 @@ const deleteArticle = async (data) => {
 };
 
 const upsertArchive = async (data) => {
+  const notes = [...data.article.notes].map((note, index) => {
+    note._id = ObjectID(note._id);
+    return note;
+  });
   try {
     await deleteArticle({ _id: data._id, articleId: data.article._id });
     await mongoClient
@@ -112,10 +116,14 @@ const upsertArchive = async (data) => {
         },
         {
           $push: {
-            archived: { ...data.article, _id: ObjectID(data.article._id) },
+            archived: {
+              ...data.article,
+              _id: ObjectID(data.article._id),
+              notes: notes
+            },
           },
         },
-        { returnDocument: "after", upsert: true },
+        { returnDocument: "after", upsert: true }
       );
   } catch (error) {
     console.error(error);
@@ -154,29 +162,49 @@ const deleteArchive = async (data) => {
 
 const upsertNote = async (data) => {
   try {
-    await mongoClient
-      .db("test")
-      .collection("user")
-      .findOneAndUpdate(
-        { _id: ObjectID(data._id), "articles._id": ObjectID(data.articleId) },
-        {
-          $set: { "articles.$.tags": data.tags, "articles.$.due": data.due },
-          $push: {
-            "articles.$.notes": {
-              _id: ObjectID(),
-              content: data.note,
+    if (data.fieldName === "articles") {
+      await mongoClient
+        .db("test")
+        .collection("user")
+        .findOneAndUpdate(
+          { _id: ObjectID(data._id), "articles._id": ObjectID(data.articleId) },
+          {
+            $set: { "articles.$.tags": data.tags, "articles.$.due": data.due },
+            $push: {
+              "articles.$.notes": {
+                _id: ObjectID(),
+                content: data.note,
+              },
             },
           },
-        },
-        { upsert: true }
-      );
-
+          { upsert: true }
+        );
+    } else if (data.fieldName === "archived") {
+      await mongoClient
+        .db("test")
+        .collection("user")
+        .findOneAndUpdate(
+          { _id: ObjectID(data._id), "archived._id": ObjectID(data.articleId) },
+          {
+            $set: { "archived.$.tags": data.tags, "archived.$.due": data.due },
+            $push: {
+              "archived.$.notes": {
+                _id: new ObjectID(),
+                content: data.note,
+              },
+            },
+          },
+          { upsert: true }
+        );
+    } else {
+      throw Error("fieldName doesn't exist");
+    }
     const notes = await fetchNotes({
       _id: data._id,
       articleId: data.articleId,
       fieldName: data.fieldName,
     });
-    return notes.pop();
+    return notes.pop(); // return the last item only
   } catch (error) {
     console.error(error);
   }
@@ -208,7 +236,11 @@ const fetchNotes = async (data) => {
         },
       ])
       .toArray();
-    const notes = doc[0][data.fieldName].length > 0 ? doc[0][data.fieldName][0].notes : null; 
+    const notes =
+      doc[0][data.fieldName].length > 0
+        ? doc[0][data.fieldName][0].notes
+        : null;
+    console.log(notes);
     return notes;
   } catch (error) {
     console.error(error);
@@ -217,17 +249,33 @@ const fetchNotes = async (data) => {
 
 const deleteNote = async (data) => {
   try {
-    await mongoClient
-      .db("test")
-      .collection("user")
-      .updateOne(
-        {
-          _id: ObjectID(data._id),
-          "articles._id": ObjectID(data.articleId),
-          "articles.notes._id": ObjectID(data.noteId),
-        },
-        { $pull: { "articles.$.notes": { _id: ObjectID(data.noteId) } } }
-      );
+    if (data.fieldName === "articles") {
+      await mongoClient
+        .db("test")
+        .collection("user")
+        .updateOne(
+          {
+            _id: ObjectID(data._id),
+            "articles._id": ObjectID(data.articleId),
+            "articles.notes._id": ObjectID(data.noteId),
+          },
+          { $pull: { "articles.$.notes": { _id: ObjectID(data.noteId) } } }
+        );
+    } else if (data.fieldName === "archived") {
+      await mongoClient
+        .db("test")
+        .collection("user")
+        .updateOne(
+          {
+            _id: ObjectID(data._id),
+            "archived._id": ObjectID(data.articleId),
+            "archived.notes._id": ObjectID(data.noteId),
+          },
+          { $pull: { "archived.$.notes": { _id: ObjectID(data.noteId) } } }
+        );
+    } else {
+      throw Error("fieldName doesn't exist");
+    }
   } catch (error) {
     console.error(error);
   }

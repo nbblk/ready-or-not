@@ -228,6 +228,7 @@ app.delete("/notes", authorize, async (req, res) => {
     await db.deleteNote({
       _id: req.query.uid,
       articleId: req.query.articleId,
+      fieldName: JSON.parse(req.query.archived) ? "archived" : "articles",
       noteId: req.body.noteId,
     });
     res.sendStatus(201);
