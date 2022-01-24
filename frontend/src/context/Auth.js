@@ -15,13 +15,20 @@ export function useAuth() {
 
 function useProvideAuth() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [triggered, setTriggered] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (triggered) {
+      setLoggedIn(true);
+      setTriggered(false);
+      window.location.replace("/main");
+    }
+
     if (sessionStorage.getItem("user")) {
       setLoggedIn(true);
     }
-  }, [loggedIn]);
+  }, [triggered]);
 
   const loginSuccess = async (response, oauthType) => {
     await authenticate({ oauthType: oauthType, token: response });
@@ -40,7 +47,7 @@ function useProvideAuth() {
       .then(async (response) => {
         const jsonData = await response.json();
         sessionStorage.setItem("user", JSON.stringify(jsonData));
-        await setLoggedIn(true);
+        setTriggered(true);
       })
       .catch((error) => {
         setError(error.statusText);
