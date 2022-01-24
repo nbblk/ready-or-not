@@ -26,9 +26,7 @@ const upsertUser = async (user) => {
             "auth.sub": user.sub ? user.sub : null,
           },
         },
-        { upsert: true },
-        { returnNewDocument: true },
-        { returnOriginal: false }
+        { returnDocument: "after", upsert: true },
       );
     return {
       _id: updated.value._id.toString(),
@@ -60,8 +58,7 @@ const upsertArticle = async (data) => {
           },
         },
       },
-      { upsert: true },
-      { returnNewDocument: false }
+      { returnDocument: "after", upsert: true },
     )
     .catch((err) => console.error(err));
 
@@ -118,8 +115,7 @@ const upsertArchive = async (data) => {
             archived: { ...data.article, _id: ObjectID(data.article._id) },
           },
         },
-        { upsert: false },
-        { returnNewDocument: false }
+        { returnDocument: "after", upsert: true },
       );
   } catch (error) {
     console.error(error);
