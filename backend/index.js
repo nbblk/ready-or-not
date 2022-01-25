@@ -259,6 +259,7 @@ app.get("/export", authorize, async (req, res) => {
       _id: req.query.uid,
       articleId: req.query.articleId,
       fileType: req.query.type,
+      fieldName: JSON.parse(req.query.archived) ? "archived" : "articles",
     });
     res.status(200);
     res.send(data);

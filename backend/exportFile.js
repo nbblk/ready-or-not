@@ -2,7 +2,7 @@ const db = require("./mongo");
 const json2md = require("json2md");
 
 async function convertNotes(data) {
-  const notes = await db.fetchNotes(data);
+  const notes = await db.fetchNotesWithDetail(data);
   const result = await convertByType(data.fileType, notes);
   return result;
 }
@@ -25,9 +25,15 @@ function convertByType(fileType, notes) {
 }
 
 function convertJsonToMarkdown(data) {
-  if (!Array.isArray(data)) {
-    throw Error("type of notes are invalid");
-  } else {
+  if (typeof data === "object") {
+    const arr = []
+    arr.push(data)
+    const jsonArray = addMarkdownElementsToData(arr);
+    const markdownStr = json2md(jsonArray);
+    return markdownStr;  
+  }
+
+  if (Array.isArray(data)) {
     const jsonArray = addMarkdownElementsToData(data);
     const markdownStr = json2md(jsonArray);
     return markdownStr;
@@ -35,7 +41,7 @@ function convertJsonToMarkdown(data) {
 }
 
 function addMarkdownElementsToData(dataArr) {
-  const originArr = dataArr[0].articles[0];
+  const originArr = dataArr[0];
   if (originArr.notes.length == 0) {
     throw Error("Notes are empty");
   }

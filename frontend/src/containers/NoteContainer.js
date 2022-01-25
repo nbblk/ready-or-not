@@ -188,13 +188,14 @@ class NoteContainer extends Component {
     const user = JSON.parse(sessionStorage.getItem("user"));
     this.setState({ loading: true });
     fetchData(
-      `${API_SERVER_URI}/export?uid=${user._id}&articleId=${articleId}&type=${fileType}`
+      `${API_SERVER_URI}/export?uid=${user._id}&articleId=${articleId}&archived=${this.props.location.state.isArchived}&type=${fileType}`
     )
       .then((response) => {
         this.setState({ loading: false });
         return response.text();
       })
-      .then((content) => download(content, `${articleId}.${fileType}`))
+      .then((content) => {
+        download(content, `${articleId}.${fileType}`)})
       .catch((err) => {
         this.setState({
           loading: false,

@@ -240,7 +240,42 @@ const fetchNotes = async (data) => {
       doc[0][data.fieldName].length > 0
         ? doc[0][data.fieldName][0].notes
         : null;
-    console.log(notes);
+    return notes;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const fetchNotesWithDetail = async (data) => {
+  try {
+    const doc = await mongoClient
+      .db("test")
+      .collection("user")
+      .aggregate([
+        { $match: { _id: ObjectID(data._id) } },
+        {
+          $project: {
+            [data.fieldName]: {
+              $filter: {
+                input: `$${data.fieldName}`,
+                as: "item",
+                cond: { $eq: ["$$item._id", ObjectID(data.articleId)] },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            [data.fieldName]: 1,
+          },
+        },
+      ])
+      .toArray();
+    const notes =
+      doc[0][data.fieldName].length > 0
+        ? doc[0][data.fieldName][0]
+        : null;
     return notes;
   } catch (error) {
     console.error(error);
@@ -311,6 +346,7 @@ module.exports = {
   deleteArchive,
   upsertNote,
   fetchNotes,
+  fetchNotesWithDetail,
   deleteNote,
   fetchArticlesByKeyword,
 };

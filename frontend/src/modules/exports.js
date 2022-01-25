@@ -4,10 +4,9 @@ import pdfFonts from "pdfmake/build/vfs_fonts.js";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 const convertToPDF = (content) => {
-  const article = JSON.parse(content)[0].articles[0];
-  const document = {
-    content: [],
-  };
+  const article = JSON.parse(content);
+  let document = { content: [] };
+
   for (let prop in article) {
     if (prop === "notes") {
       document.content.push({
@@ -32,11 +31,12 @@ const convertToPDF = (content) => {
 };
 
 const convertToCSV = (content) => {
-  const article = JSON.parse(content)[0].articles[0];
+  const article = JSON.parse(content);
   const headers = {
     title: article.title,
     url: article.url,
     tags: article.tags ? article.tags : "",
+    notes: ""
   };
 
   let headerStr = "";
@@ -46,7 +46,6 @@ const convertToCSV = (content) => {
 
     headerStr += headers[header] + "\r\n";
   }
-  console.log(headerStr);
 
   let bodyStr = "";
   for (let i = 0; i < article.notes.length; i++) {
@@ -54,12 +53,14 @@ const convertToCSV = (content) => {
 
     for (let index in article.notes[i]) {
       if (line !== "") line += ",";
-
-      line += article.notes[i][index];
+      if (index === "content") {
+        line += article.notes[i][index];
+      } else {
+        line += (i+1)
+      }
     }
     bodyStr += line + "\r\n";
   }
-  console.log(bodyStr);
   return headerStr.concat(bodyStr);
 };
 
