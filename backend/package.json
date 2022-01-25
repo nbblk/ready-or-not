@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev start": "nodemon --inspect ./index.js 80",
+    "start": "set NODE_ENV=production&&node index.js",
+    "dev": "set NODE_ENV=dev&&nodemon --inspect ./index.js 8080",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -13,13 +13,11 @@
   "dependencies": {
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
-    "connect-mongodb-session": "^2.4.1",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "google-auth-library": "^6.1.4",
-    "http-proxy-middleware": "^1.0.6",
     "json2md": "^1.9.2",
     "mongodb": "^3.6.3",
     "morgan": "^1.10.0",

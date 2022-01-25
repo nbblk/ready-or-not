@@ -23,7 +23,7 @@
     "web-vitals": "^0.2.4"
   },
   "scripts": {
-    "start": "craco start",
+    "start": "SET HTTPS=true&&SET SSL_CRT_FILE=../backend/cert/cert.crt&&SET SSL_KEY_FILE=../backend/cert/cert.key&&craco start",
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
@@ -49,6 +49,5 @@
   "devDependencies": {
     "react-github-login": "^1.0.3",
     "stylelint-config-recommended": "^3.0.0"
-  },
-  "proxy": "http://localhost:3000"
+  }
 }
