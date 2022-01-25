@@ -1,3 +1,4 @@
+
 const puppeteer = require("puppeteer");
 
 async function scrapPage(uri) {
@@ -83,6 +84,15 @@ const getImage = async (page, uri) => {
   });
   
   return image;
+};
+
+const urlImageIsAccessible = async url => {
+  const correctedUrls = url;
+  if (correctedUrls.size !== 0) {
+    const urlResponse = await request(correctedUrls.values().next().value);
+    const contentType = urlResponse.headers["content-type"];
+    return new RegExp("image/*").test(contentType);
+  }
 };
 
 module.exports = scrapPage;
