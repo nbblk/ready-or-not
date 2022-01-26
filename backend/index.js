@@ -72,7 +72,7 @@ app.use(bodyParser.json());
 app.use(morgan("dev")); // logging
 app.use(
   cors({
-    origin: "*",
+    origin: ["https://testron.com:3000", "https://localhost:3000", "https://ready-or-not.xyz"],
     credentials: true,
   })
 );
