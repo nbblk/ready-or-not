@@ -2,7 +2,9 @@
 const puppeteer = require("puppeteer");
 
 async function scrapPage(uri) {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    args: ["--single-process"]
+  });
   const page = await browser.newPage();
   await page.goto(uri, { waitUntil: "networkidle2" });
   const title = await getTitle(page);
