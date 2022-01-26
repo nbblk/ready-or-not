@@ -47,6 +47,18 @@ const sessOption = {
 
 const app = express();
 
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
+app.options("*", cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(morgan("dev")); // logging
+app.use(session(sessOption));
+
 if (NODE_ENV === "production" || NODE_ENV === "prod") {
   http.createServer(app).listen(PORT, () => {
     console.log(`listening on ${SCHEME}://${SERVER_DOMAIN}:${PORT}`);
@@ -66,18 +78,6 @@ if (NODE_ENV === "production" || NODE_ENV === "prod") {
 } else {
   console.error("NODE_ENV not set");
 }
-
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-app.use(morgan("dev")); // logging
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
-app.options("*", cors());
-app.use(session(sessOption));
 
 const errorHandler = (err, req, res, next) => {
   if (res.headerSent) {
