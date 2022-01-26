@@ -23,7 +23,8 @@
     "web-vitals": "^0.2.4"
   },
   "scripts": {
-    "start": "SET HTTPS=true&&SET SSL_CRT_FILE=../backend/cert/cert.crt&&SET SSL_KEY_FILE=../backend/cert/cert.key&&craco start",
+    "start": "SET NODE_ENV=production&&craco start",
+    "dev": "SET NODE_ENV=dev&&SET HTTPS=true&&SET SSL_CRT_FILE=../backend/cert/cert.crt&&SET SSL_KEY_FILE=../backend/cert/cert.key&&craco start",
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
