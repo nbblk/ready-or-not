@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: `./.env.${process.env.NODE_ENV}` });
 const express = require("express");
 
 const http = require("http");
@@ -63,7 +63,7 @@ if (NODE_ENV === "production" || NODE_ENV === "prod") {
   http.createServer(app).listen(PORT, () => {
     console.log(`listening on ${SCHEME}://${SERVER_DOMAIN}:${PORT}`);
   });
-} else if (NODE_ENV === "dev") {
+} else if (NODE_ENV === "development") {
   https
     .createServer(
       {

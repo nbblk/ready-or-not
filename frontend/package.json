@@ -24,7 +24,7 @@
   },
   "scripts": {
     "start": "SET NODE_ENV=production&&craco start",
-    "dev": "SET NODE_ENV=dev&&SET HTTPS=true&&SET SSL_CRT_FILE=../backend/cert/cert.crt&&SET SSL_KEY_FILE=../backend/cert/cert.key&&craco start",
+    "dev": "SET NODE_ENV=development&&SET HTTPS=true&&SET SSL_CRT_FILE=../backend/cert/cert.crt&&SET SSL_KEY_FILE=../backend/cert/cert.key&&craco start",
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
