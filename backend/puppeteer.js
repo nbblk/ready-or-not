@@ -1,12 +1,14 @@
 
 const puppeteer = require("puppeteer");
+var userAgent = require("user-agents");
 
 async function scrapPage(uri) {
   const browser = await puppeteer.launch({
     args: ["--single-process"]
   });
   const page = await browser.newPage();
-  await page.goto(uri, { waitUntil: "networkidle2" });
+  await page.setUserAgent(userAgent.toString());
+  await page.goto(uri, { timeout: 30000, waitUntil: "networkidle2" });
   const title = await getTitle(page);
   const image = await getImage(page, uri);
   return { title: title, image: image };
