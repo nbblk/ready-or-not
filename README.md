@@ -1,5 +1,4 @@
  # ready-or-not
----
 Bookmark application that lets you collect online articles and personal memos.
 
 https://ready-or-not.xyz
