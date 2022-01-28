@@ -5,16 +5,16 @@ const http = require("http");
 const https = require("https");
 const fs = require("fs");
 
-const morgan = require("morgan");
-const bodyParser = require("body-parser");
 const session = require("express-session");
+const MongoDBStore = require("connect-mongodb-session")(session);
 const { v4: uuidv4 } = require("uuid");
+
 const cors = require("cors");
+const bodyParser = require("body-parser");
+const morgan = require("morgan");
 
 const db = require("./mongo");
-
 const auth = require("./auth");
-
 const scrapPage = require("./puppeteer");
 const convertNotes = require("./exportFile");
 
@@ -24,8 +24,9 @@ const SERVER_DOMAIN = process.env.SERVER_DOMAIN;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN;
 const NODE_ENV = process.env.NODE_ENV;
 
-db.mongoInit().then(() => {
-  console.log("db connected");
+const store = new MongoDBStore({
+  uri: process.env.MONGO_DB_URI,
+  collection: 'mySessions'
 });
 
 const sessOption = {
@@ -39,11 +40,22 @@ const sessOption = {
   cookie: {
     path: "/",
     domain: CLIENT_ORIGIN,
-    httpOnly: false,
+    httpOnly: true,
     secure: true,
-    maxAge: 36000,
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week,
   },
+  store: store,
+  resave: true,
+  saveUninitialized: true
 };
+
+db.mongoInit().then(() => {
+  console.log("db connected");
+});
+
+store.on('error', (error) => {
+  console.error(error);
+})
 
 const app = express();
 
@@ -54,10 +66,10 @@ app.use(
   })
 );
 app.options("*", cors());
+app.use(session(sessOption));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(morgan("dev")); // logging
-app.use(session(sessOption));
 
 if (NODE_ENV === "production" || NODE_ENV === "prod") {
   http.createServer(app).listen(PORT, () => {
@@ -106,6 +118,7 @@ app.get("/", (req, res) => {
 app.post("/auth", async (req, res) => {
   try {
     const user = await auth.login(req.body.oauthType, req.body.token);
+    console.log(req.session);
     if (!req.session.id) {
       req.session.regenerate((err) => {
         console.error(err);
