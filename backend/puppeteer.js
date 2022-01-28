@@ -5,7 +5,7 @@ var userAgent = require("user-agents");
 async function scrapPage(uri) {
   // https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#running-puppeteer-on-heroku
   const browser = await puppeteer.launch({
-    args: ["--no-sandbox"]
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
   const page = await browser.newPage();
   await page.setUserAgent(userAgent.toString());
