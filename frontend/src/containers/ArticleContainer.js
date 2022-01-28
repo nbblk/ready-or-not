@@ -66,8 +66,8 @@ class ArticleContainer extends Component {
     const arr = [...this.state.articles];
     const found = this.findArticle(_id);
     if (found !== undefined) {
-      arr.splice(found);
-      this.setState({ articles: arr });
+      arr.splice(found, 1);
+      this.setState({ ...this.state, articles: arr });
     } else {
       throw Error(`article ${_id} not found`);
     }
