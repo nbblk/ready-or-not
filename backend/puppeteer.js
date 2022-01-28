@@ -91,7 +91,7 @@ const getImage = async (page, uri) => {
   return image;
 };
 
-const urlImageIsAccessible = async url => {
+async function urlImageIsAccessible(url) {
   const correctedUrls = url;
   if (correctedUrls.size !== 0) {
     const urlResponse = await request(correctedUrls.values().next().value);

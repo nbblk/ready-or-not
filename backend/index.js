@@ -118,7 +118,6 @@ app.get("/", (req, res) => {
 app.post("/auth", async (req, res) => {
   try {
     const user = await auth.login(req.body.oauthType, req.body.token);
-    console.log(req.session);
     if (!req.session.id) {
       req.session.regenerate((err) => {
         console.error(err);
